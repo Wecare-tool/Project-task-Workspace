@@ -1,0 +1,218 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-neutral-200;
+  }
+
+  body {
+    @apply bg-neutral-50 text-neutral-700 font-sans antialiased;
+  }
+
+  /* Headings use Lexend font */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-['Lexend'] font-semibold;
+  }
+
+  /* Custom scrollbar with Wecare Blue */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-neutral-100 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-400 rounded-full hover:bg-primary-500 transition-colors;
+  }
+
+  /* Focus styles with Wecare Blue */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+}
+
+@layer components {
+
+  /* Glass morphism with Wecare Blue tint */
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-primary-100/20 shadow-glass;
+  }
+
+  .glass-dark {
+    @apply bg-primary-900/80 backdrop-blur-xl border border-primary-700/50 shadow-glass;
+  }
+
+  /* Card styles - Off White background */
+  .card {
+    @apply bg-white rounded-lg shadow-card border border-neutral-100 p-6;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5;
+  }
+
+  /* Gradient text with Wecare colors */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-600 via-primary-400 to-success-500 bg-clip-text text-transparent;
+  }
+
+  /* Status badges */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-success-100 text-success-700;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning-100 text-warning-700;
+  }
+
+  .badge-danger {
+    @apply badge bg-danger-100 text-danger-700;
+  }
+
+  .badge-info {
+    @apply badge bg-primary-100 text-primary-700;
+  }
+
+  .badge-neutral {
+    @apply badge bg-neutral-100 text-neutral-500;
+  }
+
+  /* Form inputs */
+  .input {
+    @apply w-full px-4 py-2.5 rounded-lg border border-neutral-100 bg-white text-neutral-700 placeholder:text-neutral-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-200;
+  }
+
+  .input-error {
+    @apply input border-danger-500 focus:border-danger-500 focus:ring-danger-500/20;
+  }
+
+  /* Buttons - Wecare Brand Style */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Primary Action - Wecare Blue */
+  .btn-primary {
+    @apply btn bg-primary-500 text-white border border-primary-500 hover:bg-primary-600 focus:ring-primary-500/30 active:bg-primary-700;
+  }
+
+  /* Secondary Action - Transparent with Wecare Blue border */
+  .btn-secondary {
+    @apply btn bg-transparent text-primary-500 border border-primary-500 hover:bg-primary-50 focus:ring-primary-500/30 active:bg-primary-100;
+  }
+
+  /* Positive Action - Wecare Green */
+  .btn-success {
+    @apply btn bg-success-500 text-white border border-success-500 hover:bg-success-600 focus:ring-success-500/30 active:bg-success-700;
+  }
+
+  /* Danger Action */
+  .btn-danger {
+    @apply btn bg-white text-danger-600 border border-danger-300 hover:bg-danger-50 hover:border-danger-400 focus:ring-danger-300/30 active:bg-danger-100;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply btn bg-transparent text-neutral-500 border border-transparent hover:bg-neutral-50 hover:text-neutral-700 focus:ring-primary-300/30;
+  }
+
+  /* Outline button */
+  .btn-outline {
+    @apply btn bg-transparent border border-neutral-100 text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 focus:ring-primary-300/30;
+  }
+
+  /* Table styles */
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-neutral-100;
+  }
+
+  .table {
+    @apply w-full text-sm;
+  }
+
+  .table th {
+    @apply px-4 py-3 text-left font-semibold text-neutral-700 bg-neutral-50 border-b border-neutral-100;
+  }
+
+  .table td {
+    @apply px-4 py-3 border-b border-neutral-100;
+  }
+
+  .table tbody tr {
+    @apply hover:bg-primary-50/30 transition-colors;
+  }
+
+  /* Sidebar - Wecare Blue for active state */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs text-neutral-500 hover:bg-primary-50 hover:text-primary-700 transition-all duration-200;
+  }
+
+  .sidebar-link-active {
+    @apply sidebar-link bg-primary-500 text-white hover:bg-primary-600;
+  }
+
+  /* Panel/Header - Wecare Blue background */
+  .panel-header {
+    @apply bg-primary-500 text-white px-6 py-4 rounded-t-lg;
+  }
+
+  .panel-body {
+    @apply bg-neutral-50 px-6 py-4 rounded-b-lg;
+  }
+}
+
+@layer utilities {
+
+  /* Animations */
+  .animate-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  .slide-in-bottom {
+    animation: slideUp 0.3s ease-out forwards;
+  }
+
+  /* Gradient backgrounds with Wecare colors */
+  .bg-wecare-gradient {
+    background: linear-gradient(135deg, #3492ab 0%, #4CAF50 100%);
+  }
+
+  .bg-wecare-gradient-subtle {
+    background: linear-gradient(135deg, #c5e0e8 0%, #e8f5e9 100%);
+  }
+
+  /* Line clamp */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
