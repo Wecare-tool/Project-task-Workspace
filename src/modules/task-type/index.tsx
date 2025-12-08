@@ -32,7 +32,7 @@ export function TaskTypePage() {
     const { taskTypes, isLoading, create, update, remove } = useTaskTypes();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selected, setSelected] = useState<TaskType | null>(null);
-    const [deleteItem, setDeleteItem] = useState<TaskType | null>(null);
+    const [deleteItems, setDeleteItems] = useState<TaskType[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRows, setSelectedRows] = useState<TaskType[]>([]);
@@ -79,10 +79,10 @@ export function TaskTypePage() {
                             <Button
                                 variant="danger"
                                 size="sm"
-                                onClick={() => setDeleteItem(selectedRows[0])}
+                                onClick={() => setDeleteItems(selectedRows)}
                                 leftIcon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
                             >
-                                Delete
+                                Delete {selectedRows.length > 1 ? `(${selectedRows.length})` : ''}
                             </Button>
                         )}
                     </div>
@@ -185,9 +185,20 @@ export function TaskTypePage() {
                     onSubmit={handleSubmit} onCancel={() => setIsFormOpen(false)} isLoading={isLoading} />
             </Modal>
 
-            <ConfirmModal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)}
-                onConfirm={async () => { if (deleteItem) await remove(deleteItem.id); setDeleteItem(null); }}
-                title="Xóa loại công việc" message={`Xóa "${deleteItem?.name}"?`} isLoading={isLoading} />
+            <ConfirmModal isOpen={deleteItems.length > 0} onClose={() => setDeleteItems([])}
+                onConfirm={async () => {
+                    for (const item of deleteItems) {
+                        await remove(item.id);
+                    }
+                    setDeleteItems([]);
+                    setSelectedRows([]);
+                }}
+                title="Xóa loại công việc"
+                message={deleteItems.length > 1
+                    ? `Bạn có chắc chắn muốn xóa ${deleteItems.length} loại công việc đã chọn?`
+                    : `Xóa "${deleteItems[0]?.name}"?`
+                }
+                isLoading={isLoading} />
         </div>
     );
 }
