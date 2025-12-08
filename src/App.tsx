@@ -6,6 +6,7 @@ import { DashboardPage } from '@modules/dashboard';
 import { ProjectPage } from '@modules/project';
 import { TaskTypePage } from '@modules/task-type';
 import { TaskInstancePage } from '@modules/task-instance';
+import { DailyTaskPage } from '@modules/daily-task';
 import { ActionTypePage } from '@modules/action-type';
 import { EventTypePage } from '@modules/event-type';
 import { EventSourceTypePage } from '@modules/event-source-type';
@@ -23,6 +24,7 @@ function App() {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/projects" element={<ProjectPage />} />
                 <Route path="/tasks" element={<TaskInstancePage />} />
+                <Route path="/daily-tasks" element={<DailyTaskPage />} />
                 <Route path="/task-types" element={<TaskTypePage />} />
                 <Route path="/action-types" element={<ActionTypePage />} />
                 <Route path="/event-types" element={<EventTypePage />} />

@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAppStore } from '@stores/index';
-import { Button, Input } from '@components/ui';
 import { Search, Menu, Bell, User } from 'lucide-react';
 
 const pathTitles: Record<string, string> = {
@@ -23,7 +21,6 @@ const pathTitles: Record<string, string> = {
 };
 
 export function Header() {
-    const navigate = useNavigate();
     const location = useLocation();
     const { setMobileMenuOpen } = useAppStore();
 
@@ -38,6 +35,8 @@ export function Header() {
                     <button
                         onClick={() => setMobileMenuOpen(true)}
                         className="lg:hidden p-2 rounded-lg hover:bg-dark-100 transition-colors"
+                        title="Open menu"
+                        aria-label="Open menu"
                     >
                         <Menu className="w-5 h-5 text-dark-600" />
                     </button>
@@ -63,18 +62,30 @@ export function Header() {
                 {/* Right side */}
                 <div className="flex items-center gap-2">
                     {/* Mobile search */}
-                    <button className="md:hidden p-2 rounded-lg hover:bg-dark-100 transition-colors">
+                    <button
+                        className="md:hidden p-2 rounded-lg hover:bg-dark-100 transition-colors"
+                        title="Search"
+                        aria-label="Search"
+                    >
                         <Search className="w-5 h-5 text-dark-600" />
                     </button>
 
                     {/* Notifications */}
-                    <button className="relative p-2 rounded-lg hover:bg-dark-100 transition-colors">
+                    <button
+                        className="relative p-2 rounded-lg hover:bg-dark-100 transition-colors"
+                        title="Notifications"
+                        aria-label="Notifications"
+                    >
                         <Bell className="w-5 h-5 text-dark-600" />
                         <span className="absolute top-1 right-1 w-2 h-2 bg-danger-500 rounded-full" />
                     </button>
 
                     {/* User menu */}
-                    <button className="flex items-center gap-2 p-2 rounded-lg hover:bg-dark-100 transition-colors">
+                    <button
+                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-dark-100 transition-colors"
+                        title="User menu"
+                        aria-label="User menu"
+                    >
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
                             <User className="w-4 h-4 text-white" />
                         </div>

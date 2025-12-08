@@ -28,6 +28,8 @@ export function MainLayout() {
                             <button
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="p-2 rounded-lg hover:bg-dark-100 transition-colors"
+                                title="Close menu"
+                                aria-label="Close menu"
                             >
                                 <X className="w-5 h-5 text-dark-500" />
                             </button>

@@ -11,14 +11,14 @@
     @apply bg-neutral-50 text-neutral-700 font-sans antialiased;
   }
 
-  /* Headings use Lexend font */
+  /* Headings use Inter font with semibold weight */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-['Lexend'] font-semibold;
+    @apply font-sans font-semibold;
   }
 
   /* Custom scrollbar with Wecare Blue */

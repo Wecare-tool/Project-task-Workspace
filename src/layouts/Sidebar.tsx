@@ -31,8 +31,9 @@ const navGroups: NavGroup[] = [
     {
         title: 'Project Management',
         items: [
+            { label: 'Dashboard', path: '/', icon: <Activity className="w-5 h-5" /> },
             { label: 'Projects', path: '/projects', icon: <FolderKanban className="w-5 h-5" /> },
-            { label: 'Tasks', path: '/tasks', icon: <ListChecks className="w-5 h-5" /> },
+            { label: 'Daily Task', path: '/daily-tasks', icon: <Calendar className="w-5 h-5" /> },
         ],
     },
     {
@@ -49,6 +50,7 @@ const navGroups: NavGroup[] = [
     {
         title: 'Instances',
         items: [
+            { label: 'Task Instances', path: '/tasks', icon: <ListChecks className="w-5 h-5" /> },
             { label: 'Actions', path: '/action-instances', icon: <Activity className="w-5 h-5" /> },
             { label: 'Events', path: '/event-instances', icon: <Calendar className="w-5 h-5" /> },
         ],

@@ -89,8 +89,8 @@ export default {
                 },
             },
             fontFamily: {
-                sans: ['Roboto', 'system-ui', '-apple-system', 'sans-serif'],
-                heading: ['Lexend', 'system-ui', '-apple-system', 'sans-serif'],
+                sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                heading: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
             },
             boxShadow: {
                 'glass': '0 8px 32px 0 rgba(52, 146, 171, 0.15)',

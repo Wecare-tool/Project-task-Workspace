@@ -15,7 +15,12 @@ const columns: TableColumn<TaskType>[] = [
         key: 'name', label: 'Tên loại', sortable: true,
         render: (v, row) => (
             <div className="flex items-center gap-2">
-                {row.color && <div className="w-3 h-3 rounded-full" style={{ backgroundColor: row.color }} />}
+                {row.color && (
+                    <div
+                        className="w-3 h-3 rounded-full task-type-color-indicator"
+                        style={{ backgroundColor: row.color }}
+                    />
+                )}
                 <span className="font-medium">{v as string}</span>
             </div>
         )
