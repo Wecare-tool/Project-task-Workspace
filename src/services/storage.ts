@@ -45,7 +45,7 @@ export class StorageService<T extends { id: string }> {
             id: generateId(),
             createdAt: now,
             updatedAt: now,
-        } as T;
+        } as unknown as T;
 
         const data = this.getStorage();
         data.push(newItem);

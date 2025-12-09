@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { cn } from '@utils/index';
 import { useAppStore } from '@stores/index';
 import {
@@ -66,7 +66,6 @@ const navGroups: NavGroup[] = [
 ];
 
 export function Sidebar() {
-    const location = useLocation();
     const { sidebarCollapsed, toggleSidebar } = useAppStore();
 
     return (

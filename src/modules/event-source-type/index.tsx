@@ -36,7 +36,7 @@ export function EventSourceTypePage() {
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRows, setSelectedRows] = useState<EventSourceTypeNew[]>([]);
 
-    const handleSubmit = async (data: FormData) => {
+    const handleSubmit = async (_data: FormData) => {
         console.warn('Submit not implemented for Dataverse');
         setIsFormOpen(false); setSelected(null);
     };

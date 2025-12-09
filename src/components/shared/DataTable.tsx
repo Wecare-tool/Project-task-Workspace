@@ -11,7 +11,6 @@ import {
     Eye,
     Pencil,
     Trash2,
-    MoreHorizontal
 } from 'lucide-react';
 
 interface DataTableProps<T> {
@@ -32,7 +31,7 @@ interface DataTableProps<T> {
     onSelectionChange?: (selected: T[]) => void;
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T>({
     data,
     columns,
     keyField,
@@ -53,7 +52,7 @@ export function DataTable<T extends Record<string, unknown>>({
     const [sortField, setSortField] = useState<string | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(initialPageSize);
+    const [pageSize] = useState(initialPageSize);
     const [selectedRows, setSelectedRows] = useState<T[]>([]);
 
     // Filter data by search

@@ -56,6 +56,26 @@ export const DATAVERSE_TABLES = {
         columns: ['crdfd_taskdependencyid', 'crdfd_name', '_cr1bb_eventtype_value', '_cr1bb_parenttask_value', '_cr1bb_childtask_value', 'crdfd_outcome'],
         idField: 'crdfd_taskdependencyid',
     },
+    taskInstances: {
+        name: 'crdfd_task_instances',
+        columns: [
+            'crdfd_task_instanceid', 'crdfd_name', '_crdfd_tasktype_value', '_crdfd_eventinstance_value',
+            'crdfd_priority', 'crdfd_rank', '_crdfd_incharge_value', 'cr1bb_trangthai', 'crdfd_deadline',
+            'crdfd_discussion', 'crdfd_stepstage', 'crdfd_structuredplan', 'crdfd_taskresult',
+            'crdfd_taskresultrecord', 'crdfd_taskresulttable'
+        ],
+        idField: 'crdfd_task_instanceid',
+    },
+    eventInstances: {
+        name: 'crdfd_eventinstances',
+        columns: ['crdfd_eventinstanceid', 'crdfd_name', '_crdfd_eventtype_value', 'crdfd_recordid'],
+        idField: 'crdfd_eventinstanceid',
+    },
+    actionInstances: {
+        name: 'crdfd_actioninstances',
+        columns: ['crdfd_actioninstanceid', 'crdfd_name', '_crdfd_taskinstance_value', 'crdfd_trangthai', '_crdfd_tasktypexaction_value'],
+        idField: 'crdfd_actioninstanceid',
+    },
 };
 
 // Token cache

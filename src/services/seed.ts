@@ -6,7 +6,6 @@ import {
     eventSourceTypeStorage,
     eventTypeStorage,
 } from '@services/index';
-import { generateId } from '@utils/index';
 
 // Sample data for seeding
 const sampleProjects = [

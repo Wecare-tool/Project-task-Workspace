@@ -38,7 +38,7 @@ export function ActionTypePage() {
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRows, setSelectedRows] = useState<ActionTypeNew[]>([]);
 
-    const handleSubmit = async (data: FormData) => {
+    const handleSubmit = async (_data: FormData) => {
         console.warn('Submit not implemented for Dataverse');
         setIsFormOpen(false); setSelected(null);
     };

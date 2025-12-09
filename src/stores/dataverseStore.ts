@@ -16,6 +16,9 @@ import {
     mapTaskTypeAction,
     mapTaskTypeAttributeMapping,
     mapDataverseTaskDependency,
+    mapDataverseTaskInstance,
+    mapDataverseEventInstance,
+    mapDataverseActionInstance,
 } from '@services/dataverseTypes';
 import type {
     DataverseTaskType,
@@ -33,8 +36,11 @@ import type {
     TaskTypeAttributeMapping,
     DataverseTaskDependency,
     TaskDependency,
+    DataverseTaskInstance,
+    DataverseEventInstance,
+    DataverseActionInstance
 } from '@services/dataverseTypes';
-import type { TaskType, TaskTypeAttribute, EventType } from '@/types';
+import type { TaskType, TaskTypeAttribute, EventType, TaskInstance, EventInstance, ActionInstance } from '@/types';
 import { toast } from '@stores/index';
 
 interface DataverseState {
@@ -44,6 +50,9 @@ interface DataverseState {
     eventTypes: EventType[];
     actionTypeNews: ActionTypeNew[];
     eventSourceTypes: EventSourceTypeNew[];
+    taskInstances: TaskInstance[];
+    eventInstances: EventInstance[];
+    actionInstances: ActionInstance[];
     // Mapping data
     eventTypeTaskTypeMappings: EventTypeTaskTypeMapping[];
     taskTypeActions: TaskTypeAction[];
@@ -60,6 +69,9 @@ interface DataverseState {
     refreshEventTypes: () => Promise<void>;
     refreshActionTypeNews: () => Promise<void>;
     refreshEventSourceTypes: () => Promise<void>;
+    refreshTaskInstances: () => Promise<void>;
+    refreshEventInstances: () => Promise<void>;
+    refreshActionInstances: () => Promise<void>;
     refreshEventTypeTaskTypeMappings: () => Promise<void>;
     refreshTaskTypeActions: () => Promise<void>;
     refreshTaskTypeAttributeMappings: () => Promise<void>;
@@ -75,6 +87,9 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
     eventTypes: [],
     actionTypeNews: [],
     eventSourceTypes: [],
+    taskInstances: [],
+    eventInstances: [],
+    actionInstances: [],
     eventTypeTaskTypeMappings: [],
     taskTypeActions: [],
     taskTypeAttributeMappings: [],
@@ -87,7 +102,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         if (get().isInitialized) return;
         set({ isLoading: true, error: null });
         try {
-            await Promise.all([
+            const results = await Promise.allSettled([
                 get().refreshTaskTypes(),
                 get().refreshTaskTypeAttributes(),
                 get().refreshEventTypes(),
@@ -97,9 +112,33 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
                 get().refreshTaskTypeActions(),
                 get().refreshTaskTypeAttributeMappings(),
                 get().refreshTaskDependencies(),
+                // Refresh instances as well
+                get().refreshTaskInstances(),
+                get().refreshEventInstances(),
+                get().refreshActionInstances(),
             ]);
+
+            // Log failures
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`Failed to load data for item index ${index}:`, result.reason);
+                }
+            });
+
+            // Check if all failed (critical failure) or just some
+            const allFailed = results.every(r => r.status === 'rejected');
+            if (allFailed) {
+                throw new Error('Failed to load any data from Dataverse');
+            }
+
             set({ isInitialized: true });
-            toast.success('Connected', 'Data loaded from Dataverse');
+
+            const someFailed = results.some(r => r.status === 'rejected');
+            if (someFailed) {
+                toast.warning('Connected with Warnings', 'Some data failed to load. Check console for details.');
+            } else {
+                toast.success('Connected', 'Data loaded from Dataverse');
+            }
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to load data';
             set({ error: message });
@@ -160,6 +199,39 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
             set({ eventSourceTypes: data.map(mapDataverseEventSourceType) });
         } catch (error) {
             console.error('Error fetching event source types:', error);
+            throw error;
+        }
+    },
+
+    refreshTaskInstances: async () => {
+        try {
+            const config = DATAVERSE_TABLES.taskInstances;
+            const data = await fetchTableData<DataverseTaskInstance>(config.name, config.columns);
+            set({ taskInstances: data.map(mapDataverseTaskInstance) });
+        } catch (error) {
+            console.error('Error fetching task instances:', error);
+            throw error;
+        }
+    },
+
+    refreshEventInstances: async () => {
+        try {
+            const config = DATAVERSE_TABLES.eventInstances;
+            const data = await fetchTableData<DataverseEventInstance>(config.name, config.columns);
+            set({ eventInstances: data.map(mapDataverseEventInstance) });
+        } catch (error) {
+            console.error('Error fetching event instances:', error);
+            throw error;
+        }
+    },
+
+    refreshActionInstances: async () => {
+        try {
+            const config = DATAVERSE_TABLES.actionInstances;
+            const data = await fetchTableData<DataverseActionInstance>(config.name, config.columns);
+            set({ actionInstances: data.map(mapDataverseActionInstance) });
+        } catch (error) {
+            console.error('Error fetching action instances:', error);
             throw error;
         }
     },

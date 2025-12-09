@@ -28,10 +28,11 @@ export function ProjectPage() {
     };
 
     const handleFormSubmit = async (data: ProjectFormData) => {
+        const payload = { ...data, endDate: data.endDate ?? undefined };
         if (selectedProject) {
-            await update(selectedProject.id, data);
+            await update(selectedProject.id, payload);
         } else {
-            await create(data);
+            await create(payload);
         }
         setIsFormOpen(false);
         setSelectedProject(null);

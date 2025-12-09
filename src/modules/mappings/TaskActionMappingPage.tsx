@@ -34,7 +34,7 @@ export function TaskActionMappingPage() {
         { key: 'actionTypeId', label: 'Action Type', sortable: true, render: (v) => getActionTypeName(v as string) },
         { key: 'order', label: 'Order', sortable: true },
         { key: 'inCharge', label: 'In Charge', render: (v) => (v as string) || '-' },
-        { key: 'duration', label: 'Duration', render: (v) => v ?? '-' },
+        { key: 'duration', label: 'Duration', render: (v) => (v as React.ReactNode) ?? '-' },
     ];
 
     // Filter based on search query

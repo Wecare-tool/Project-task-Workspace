@@ -17,7 +17,7 @@ type FormData = z.infer<typeof eventTypeSchema>;
 
 function useEventTypes() {
     const { eventTypes, eventSourceTypes, isLoading, refreshEventTypes } = useDataverse();
-    const [localLoading, setLocalLoading] = useState(false);
+    const [localLoading] = useState(false);
 
     const sourceOptions = useMemo(() =>
         eventSourceTypes.map(s => ({ value: s.id, label: s.name })),
@@ -63,7 +63,7 @@ export function EventTypePage() {
         { name: 'description', label: 'Mô tả', type: 'textarea', placeholder: 'Mô tả chi tiết' },
     ];
 
-    const handleSubmit = async (data: FormData) => {
+    const handleSubmit = async (_data: FormData) => {
         console.warn('Submit not implemented for Dataverse');
         setIsFormOpen(false); setSelected(null);
     };

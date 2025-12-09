@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { FormField, SelectOption } from '@/types';
+import type { FormField } from '@/types';
 
 // Validation schema
 export const taskTypeSchema = z.object({

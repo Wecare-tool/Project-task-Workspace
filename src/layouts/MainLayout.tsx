@@ -3,7 +3,7 @@ import { useAppStore } from '@stores/index';
 import { cn } from '@utils/index';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { ToastContainer } from '@components/shared';
+import { ToastProvider } from '@components/shared';
 import { X } from 'lucide-react';
 
 export function MainLayout() {
@@ -55,7 +55,7 @@ export function MainLayout() {
             </div>
 
             {/* Toast Container */}
-            <ToastContainer />
+            <ToastProvider />
         </div>
     );
 }

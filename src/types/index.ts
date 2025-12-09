@@ -299,3 +299,45 @@ export interface DashboardStats {
     recentProjects: Project[];
     recentTasks: TaskInstance[];
 }
+
+// ============================================
+// CRM / Dataverse Types
+// ============================================
+
+export interface CRMTaskInstance {
+    crdfd_task_instances: string; // Table Name or ID
+    crdfd_task_instanceid: string;
+    crdfd_name: string;
+    _crdfd_tasktype_value: string;
+    _crdfd_eventinstance_value?: string;
+    crdfd_priority: number; // Assuming priority is number/enum, verify utilization
+    crdfd_rank: number;
+    crdfd_incharge?: string;
+    cr1bb_trangthai: number; // Status code
+    crdfd_deadline?: Date;
+    crdfd_discussion?: string;
+    crdfd_stepstage?: string;
+    crdfd_structuredplan?: string;
+    crdfd_taskresult?: string;
+    crdfd_taskresultrecord?: string;
+    crdfd_taskresulttable?: string;
+}
+
+export interface CRMEventInstance {
+    crdfd_eventinstances: string; // Table Name or ID
+    crdfd_eventinstanceid: string; // Primary Key usually ends with id
+    crdfd_name: string;
+    _crdfd_eventtype_value: string;
+    crdfd_mesage?: string;
+    crdfd_trangthai: number;
+    crdfd_recordid?: string;
+}
+
+export interface CRMActionInstance {
+    crdfd_actioninstances: string; // Table Name or ID
+    crdfd_actioninstanceid: string;
+    crdfd_name: string;
+    _crdfd_taskinstance_value: string;
+    crdfd_trangthai: number;
+    _crdfd_tasktypexaction_value?: string;
+}
