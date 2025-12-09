@@ -6,6 +6,7 @@ import { Button } from '@components/ui';
 import { Modal, ConfirmModal, DataTable, FormBuilder, CommandBar } from '@components/shared';
 import { formatDateTime } from '@utils/index';
 import { Plus } from 'lucide-react';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useEventInstances } from './hooks';
 
 const schema = z.object({
@@ -37,6 +38,35 @@ export function EventInstancePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRows, setSelectedRows] = useState<EventInstance[]>([]);
+
+    useKeyboardShortcuts([
+        {
+            combo: { key: 'c' },
+            handler: () => {
+                setSelected(null);
+                setIsFormOpen(true);
+            },
+            description: 'Create new event'
+        },
+        {
+            combo: { key: 'Delete' },
+            handler: () => {
+                if (selectedRows.length > 0) {
+                    setDeleteItem(selectedRows[0]);
+                }
+            },
+            description: 'Delete selected'
+        },
+        {
+            combo: { key: 'Backspace' },
+            handler: () => {
+                if (selectedRows.length > 0) {
+                    setDeleteItem(selectedRows[0]);
+                }
+            },
+            description: 'Delete selected'
+        }
+    ]);
 
     const columns: TableColumn<EventInstance>[] = [
         { key: 'eventTypeId', label: 'Loại sự kiện', sortable: true, render: (v) => getEventTypeName(v as string) },
@@ -160,8 +190,6 @@ export function EventInstancePage() {
                     columns={columns}
                     keyField="id"
                     searchable={false}
-                    onEdit={undefined}
-                    onDelete={undefined}
                     isLoading={isLoading}
                     selectable
                     onSelectionChange={setSelectedRows}

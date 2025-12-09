@@ -1,120 +1,154 @@
 import { useState } from 'react';
-import type { Project } from '@/types';
+import type { ProjectNew } from '@services/dataverseTypes';
 import { Button } from '@components/ui';
-import { ConfirmModal } from '@components/shared';
-import { Plus, FolderKanban } from 'lucide-react';
+import { DataTable, CommandBar } from '@components/shared';
+import { Plus, RefreshCw } from 'lucide-react';
 import { useProjects } from './hooks';
-import { ProjectForm, ProjectList } from './components';
-import type { ProjectFormData } from './schema';
+import type { TableColumn } from '@/types';
+import { formatDate } from '@utils/index';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 export function ProjectPage() {
-    const { projects, isLoading, create, update, remove } = useProjects();
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-    const [deleteProject, setDeleteProject] = useState<Project | null>(null);
+    const { projects, isLoading, refresh } = useProjects();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
+    const [selectedRows, setSelectedRows] = useState<ProjectNew[]>([]);
 
-    const handleCreate = () => {
-        setSelectedProject(null);
-        setIsFormOpen(true);
-    };
-
-    const handleEdit = (project: Project) => {
-        setSelectedProject(project);
-        setIsFormOpen(true);
-    };
-
-    const handleDelete = (project: Project) => {
-        setDeleteProject(project);
-    };
-
-    const handleFormSubmit = async (data: ProjectFormData) => {
-        const payload = { ...data, endDate: data.endDate ?? undefined };
-        if (selectedProject) {
-            await update(selectedProject.id, payload);
-        } else {
-            await create(payload);
+    useKeyboardShortcuts([
+        {
+            combo: { key: 'c' },
+            handler: () => {
+                console.warn('Create not implemented for Dataverse projects yet');
+            },
+            description: 'Create new project'
+        },
+        {
+            combo: { key: 'r', ctrl: true },
+            handler: () => {
+                refresh();
+            },
+            description: 'Refresh data'
         }
-        setIsFormOpen(false);
-        setSelectedProject(null);
-    };
+    ]);
 
-    const handleConfirmDelete = async () => {
-        if (deleteProject) {
-            await remove(deleteProject.id);
-            setDeleteProject(null);
-        }
-    };
+    const columns: TableColumn<ProjectNew>[] = [
+        { key: 'name', label: 'Tên dự án', sortable: true },
+        { key: 'projectType', label: 'Loại', sortable: true, render: (v) => (v as string) || '-' },
+        { key: 'status', label: 'Trạng thái', sortable: true, render: (v) => (v as string) || '-' },
+        { key: 'priority', label: 'Độ ưu tiên', sortable: true, render: (v) => (v as string) || '-' },
+        { key: 'department', label: 'Phòng ban', render: (v) => (v as string) || '-' },
+        { key: 'startDate', label: 'Ngày bắt đầu', render: (v) => v ? formatDate(v as Date) : '-' },
+        { key: 'endDate', label: 'Ngày kết thúc', render: (v) => v ? formatDate(v as Date) : '-' },
+    ];
 
-    return (
-        <div className="space-y-6 animate-fade-in">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-primary-100">
-                        <FolderKanban className="w-6 h-6 text-primary-600" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-dark-900">Dự án</h1>
-                        <p className="text-dark-500">Quản lý tất cả dự án của bạn</p>
-                    </div>
-                </div>
-                <Button onClick={handleCreate} leftIcon={<Plus className="w-4 h-4" />}>
-                    Tạo dự án
+    const filteredProjects = projects.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.department?.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    const filterContent = (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div>
+                <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Trạng thái
+                </label>
+                <select className="input w-full text-sm h-8" title="Lọc theo trạng thái">
+                    <option value="">Tất cả</option>
+                    <option value="active">Đang hoạt động</option>
+                    <option value="completed">Hoàn thành</option>
+                    <option value="on-hold">Tạm dừng</option>
+                </select>
+            </div>
+            <div>
+                <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Sắp xếp
+                </label>
+                <select className="input w-full text-sm h-8" title="Sắp xếp theo">
+                    <option value="name">Tên dự án</option>
+                    <option value="startDate">Ngày bắt đầu</option>
+                    <option value="priority">Độ ưu tiên</option>
+                </select>
+            </div>
+            <div className="flex items-end">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFilters(false)}
+                    className="w-full"
+                >
+                    Đóng bộ lọc
                 </Button>
             </div>
+        </div>
+    );
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="card">
-                    <div className="text-sm text-dark-500">Tổng số dự án</div>
-                    <div className="text-2xl font-bold text-dark-900">{projects.length}</div>
-                </div>
-                <div className="card">
-                    <div className="text-sm text-dark-500">Đang hoạt động</div>
-                    <div className="text-2xl font-bold text-success-600">
-                        {projects.filter(p => p.status === 'active').length}
-                    </div>
-                </div>
-                <div className="card">
-                    <div className="text-sm text-dark-500">Đã lưu trữ</div>
-                    <div className="text-2xl font-bold text-dark-400">
-                        {projects.filter(p => p.status === 'archived').length}
-                    </div>
-                </div>
-            </div>
+    const actions = (
+        <>
+            <Button
+                variant="primary"
+                size="sm"
+                onClick={() => console.warn('Create not implemented')}
+                leftIcon={<Plus className="w-3.5 h-3.5" />}
+                title="Create project (c)"
+            >
+                Add new
+            </Button>
+            <Button
+                variant="secondary"
+                size="sm"
+                onClick={refresh}
+                leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+            >
+                Refresh
+            </Button>
+            {selectedRows.length === 1 && (
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => console.warn('Edit not implemented')}
+                    leftIcon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>}
+                >
+                    Edit
+                </Button>
+            )}
+            {selectedRows.length > 0 && (
+                <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => console.warn('Delete not implemented')}
+                    leftIcon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+                >
+                    Delete {selectedRows.length > 1 ? `(${selectedRows.length})` : ''}
+                </Button>
+            )}
+        </>
+    );
 
-            {/* Project List */}
-            <div className="card">
-                <ProjectList
-                    projects={projects}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
+    return (
+        <div className="space-y-2 animate-fade-in">
+            <CommandBar
+                onSearch={setSearchQuery}
+                searchValue={searchQuery}
+                onFilterClick={() => setShowFilters(!showFilters)}
+                isFilterActive={showFilters}
+                filterContent={filterContent}
+                actions={actions}
+                selectedCount={selectedRows.length}
+            />
+
+            {/* Data Table */}
+            <div className="card p-3">
+                <DataTable<ProjectNew>
+                    data={filteredProjects}
+                    columns={columns}
+                    keyField="id"
+                    searchable={false}
                     isLoading={isLoading}
+                    selectable
+                    onSelectionChange={setSelectedRows}
+                    emptyMessage={searchQuery ? "Không tìm thấy kết quả phù hợp" : "Chưa có dự án nào"}
                 />
             </div>
-
-            {/* Create/Edit Modal */}
-            <ProjectForm
-                isOpen={isFormOpen}
-                onClose={() => {
-                    setIsFormOpen(false);
-                    setSelectedProject(null);
-                }}
-                onSubmit={handleFormSubmit}
-                project={selectedProject}
-                isLoading={isLoading}
-            />
-
-            {/* Delete Confirmation */}
-            <ConfirmModal
-                isOpen={!!deleteProject}
-                onClose={() => setDeleteProject(null)}
-                onConfirm={handleConfirmDelete}
-                title="Xóa dự án"
-                message={`Bạn có chắc chắn muốn xóa dự án "${deleteProject?.name}"? Hành động này không thể hoàn tác.`}
-                confirmText="Xóa"
-                isLoading={isLoading}
-            />
         </div>
     );
 }

@@ -174,9 +174,9 @@ export function mapDataverseEventInstance(item: DataverseEventInstance): EventIn
     return {
         id: item.crdfd_eventinstanceid || generateId(),
         eventTypeId: item._crdfd_eventtype_value || '',
-        taskInstanceId: '', // Not directly in table schema provided (crdfd_eventinstances has _crdfd_eventtype_value but not taskinstance)
+        taskInstanceId: '', // Not directly in table schema provided
         timestamp: item.createdon ? new Date(item.createdon) : new Date(),
-        source: item.crdfd_recordid || 'Dataverse',
+        source: item.crdfd_name || 'Dataverse',
         createdAt: item.createdon ? new Date(item.createdon) : new Date(),
         updatedAt: item.modifiedon ? new Date(item.modifiedon) : new Date(),
     };
@@ -342,32 +342,85 @@ export function mapTaskTypeAttributeMapping(item: DataverseTaskTypeAttributeMapp
 // Task Dependency from Dataverse
 export interface DataverseTaskDependency {
     crdfd_taskdependencyid?: string;
-    crdfd_name: string;
+    crdfd_name?: string;
     '_cr1bb_eventtype_value'?: string;
     '_cr1bb_parenttask_value'?: string;
     '_cr1bb_childtask_value'?: string;
-    crdfd_outcome?: string;
+    crdfd_outcome?: number;
     'crdfd_outcome@OData.Community.Display.V1.FormattedValue'?: string;
     createdon?: string;
     modifiedon?: string;
 }
 
-export interface TaskDependency {
+export interface TaskDependencyNew {
     id: string;
     name: string;
     eventTypeId: string;
     parentTaskId: string;
     childTaskId: string;
     outcome?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-export function mapDataverseTaskDependency(item: DataverseTaskDependency): TaskDependency {
+export function mapDataverseTaskDependency(item: DataverseTaskDependency): TaskDependencyNew {
     return {
         id: item.crdfd_taskdependencyid || generateId(),
         name: item.crdfd_name || '',
         eventTypeId: item['_cr1bb_eventtype_value'] || '',
         parentTaskId: item['_cr1bb_parenttask_value'] || '',
         childTaskId: item['_cr1bb_childtask_value'] || '',
-        outcome: item['crdfd_outcome@OData.Community.Display.V1.FormattedValue'] as string || item.crdfd_outcome,
+        outcome: item['crdfd_outcome@OData.Community.Display.V1.FormattedValue'] || '',
+        createdAt: item.createdon ? new Date(item.createdon) : new Date(),
+        updatedAt: item.modifiedon ? new Date(item.modifiedon) : new Date(),
+    };
+}
+
+// Project from Dataverse
+export interface DataverseProject {
+    crdfd_projectid?: string;
+    crdfd_name: string;
+    crdfd_projecttype?: number;
+    'crdfd_projecttype@OData.Community.Display.V1.FormattedValue'?: string;
+    crdfd_priority?: number;
+    'crdfd_priority@OData.Community.Display.V1.FormattedValue'?: string;
+    crdfd_projectstatus?: number;
+    'crdfd_projectstatus@OData.Community.Display.V1.FormattedValue'?: string;
+    _crdfd_process_value?: string;
+    '_crdfd_process_value@OData.Community.Display.V1.FormattedValue'?: string;
+    crdfd_department?: string;
+    crdfd_startdate?: string;
+    crdfd_enddate?: string;
+    createdon?: string;
+    modifiedon?: string;
+}
+
+export interface ProjectNew {
+    id: string;
+    name: string;
+    projectType?: string;
+    priority?: string;
+    status?: string;
+    process?: string;
+    department?: string;
+    startDate?: Date;
+    endDate?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export function mapDataverseProject(item: DataverseProject): ProjectNew {
+    return {
+        id: item.crdfd_projectid || generateId(),
+        name: item.crdfd_name || '',
+        projectType: item['crdfd_projecttype@OData.Community.Display.V1.FormattedValue'] || '',
+        priority: item['crdfd_priority@OData.Community.Display.V1.FormattedValue'] || '',
+        status: item['crdfd_projectstatus@OData.Community.Display.V1.FormattedValue'] || '',
+        process: item['_crdfd_process_value@OData.Community.Display.V1.FormattedValue'] || '',
+        department: item.crdfd_department || '',
+        startDate: item.crdfd_startdate ? new Date(item.crdfd_startdate) : undefined,
+        endDate: item.crdfd_enddate ? new Date(item.crdfd_enddate) : undefined,
+        createdAt: item.createdon ? new Date(item.createdon) : new Date(),
+        updatedAt: item.modifiedon ? new Date(item.modifiedon) : new Date(),
     };
 }

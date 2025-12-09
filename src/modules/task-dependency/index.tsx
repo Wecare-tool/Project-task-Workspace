@@ -4,6 +4,7 @@ import type { TaskDependency, TableColumn, FormField } from '@/types';
 import { Button } from '@components/ui';
 import { Modal, ConfirmModal, DataTable, FormBuilder, CommandBar } from '@components/shared';
 import { Plus, ArrowRight } from 'lucide-react';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useTaskDependencies } from './hooks';
 
 const schema = z.object({
@@ -40,6 +41,35 @@ export function TaskDependencyPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRows, setSelectedRows] = useState<TaskDependency[]>([]);
+
+    useKeyboardShortcuts([
+        {
+            combo: { key: 'c' },
+            handler: () => {
+                setSelected(null);
+                setIsFormOpen(true);
+            },
+            description: 'Create new dependency'
+        },
+        {
+            combo: { key: 'Delete' },
+            handler: () => {
+                if (selectedRows.length > 0) {
+                    setDeleteItem(selectedRows[0]);
+                }
+            },
+            description: 'Delete selected'
+        },
+        {
+            combo: { key: 'Backspace' },
+            handler: () => {
+                if (selectedRows.length > 0) {
+                    setDeleteItem(selectedRows[0]);
+                }
+            },
+            description: 'Delete selected'
+        }
+    ]);
 
     const columns: TableColumn<TaskDependency>[] = [
         { key: 'parentTaskId', label: 'Công việc nguồn', render: (v) => <span className="line-clamp-1 font-medium text-neutral-900">{getTaskName(v as string)}</span> },
@@ -168,8 +198,6 @@ export function TaskDependencyPage() {
                     columns={columns}
                     keyField="id"
                     searchable={false}
-                    onEdit={undefined}
-                    onDelete={undefined}
                     isLoading={isLoading}
                     selectable
                     onSelectionChange={setSelectedRows}

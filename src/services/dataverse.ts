@@ -53,8 +53,13 @@ export const DATAVERSE_TABLES = {
     },
     taskDependencies: {
         name: 'crdfd_taskdependencies',
-        columns: ['crdfd_taskdependencyid', 'crdfd_name', '_cr1bb_eventtype_value', '_cr1bb_parenttask_value', '_cr1bb_childtask_value', 'crdfd_outcome'],
+        columns: ['crdfd_taskdependencyid', 'crdfd_name', '_cr1bb_eventtype_value', '_cr1bb_parenttask_value', '_cr1bb_childtask_value', 'crdfd_outcome', 'createdon', 'modifiedon'],
         idField: 'crdfd_taskdependencyid',
+    },
+    projects: {
+        name: 'crdfd_projects',
+        columns: ['crdfd_projectid', 'crdfd_name', 'crdfd_projecttype', 'crdfd_priority', 'crdfd_projectstatus', '_crdfd_process_value', 'crdfd_department', 'crdfd_startdate', 'crdfd_enddate', 'createdon', 'modifiedon'],
+        idField: 'crdfd_projectid',
     },
     taskInstances: {
         name: 'crdfd_task_instances',
@@ -62,18 +67,18 @@ export const DATAVERSE_TABLES = {
             'crdfd_task_instanceid', 'crdfd_name', '_crdfd_tasktype_value', '_crdfd_eventinstance_value',
             'crdfd_priority', 'crdfd_rank', '_crdfd_incharge_value', 'cr1bb_trangthai', 'crdfd_deadline',
             'crdfd_discussion', 'crdfd_stepstage', 'crdfd_structuredplan', 'crdfd_taskresult',
-            'crdfd_taskresultrecord', 'crdfd_taskresulttable'
+            'crdfd_taskresultrecord', 'crdfd_taskresulttable', 'createdon', 'modifiedon'
         ],
         idField: 'crdfd_task_instanceid',
     },
     eventInstances: {
         name: 'crdfd_eventinstances',
-        columns: ['crdfd_eventinstanceid', 'crdfd_name', '_crdfd_eventtype_value', 'crdfd_recordid'],
+        columns: ['crdfd_eventinstanceid', 'crdfd_name', '_crdfd_eventtype_value', 'createdon', 'modifiedon'],
         idField: 'crdfd_eventinstanceid',
     },
     actionInstances: {
         name: 'crdfd_actioninstances',
-        columns: ['crdfd_actioninstanceid', 'crdfd_name', '_crdfd_taskinstance_value', 'crdfd_trangthai', '_crdfd_tasktypexaction_value'],
+        columns: ['crdfd_actioninstanceid', 'crdfd_name', '_crdfd_taskinstance_value', 'crdfd_trangthai', '_crdfd_tasktypexaction_value', 'createdon', 'modifiedon'],
         idField: 'crdfd_actioninstanceid',
     },
 };
@@ -195,7 +200,7 @@ export async function updateRecord<T>(
 }
 
 /**
- * Delete a record from Dataverse
+ * Delete a record from Dataverse (hard delete - use with caution)
  */
 export async function deleteRecord(
     tableName: string,
@@ -204,6 +209,17 @@ export async function deleteRecord(
     await dataverseRequest(`${tableName}(${id})`, {
         method: 'DELETE',
     });
+}
+
+/**
+ * Deactivate a record in Dataverse (soft delete - sets statecode to 1)
+ * This is the preferred method for "deleting" records
+ */
+export async function deactivateRecord(
+    tableName: string,
+    id: string
+): Promise<void> {
+    await updateRecord(tableName, id, { statecode: 1 });
 }
 
 // Export config for external use

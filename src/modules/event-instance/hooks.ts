@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react';
 import { useDataverse } from '@stores/dataverseStore';
-// import { toast } from '@stores/index';
 
 export function useEventInstances() {
     const { eventInstances: events, isLoading, refreshEventInstances, eventTypes } = useDataverse();

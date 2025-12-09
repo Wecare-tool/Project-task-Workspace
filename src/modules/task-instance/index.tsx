@@ -187,21 +187,6 @@ export function TaskInstancePage() {
                 selectedCount={selectedRows.length}
             />
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {[
-                    { label: 'Total', value: tasks.length, color: 'text-neutral-900' },
-                    { label: 'In Progress', value: tasks.filter(t => t.status === 'in-progress').length, color: 'text-primary-600' },
-                    { label: 'Blocked', value: tasks.filter(t => t.status === 'blocked').length, color: 'text-danger-600' },
-                    { label: 'Completed', value: tasks.filter(t => t.status === 'completed').length, color: 'text-success-600' },
-                ].map(stat => (
-                    <div key={stat.label} className="card p-3 text-center">
-                        <div className="text-xs text-neutral-500">{stat.label}</div>
-                        <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
-                    </div>
-                ))}
-            </div>
-
             {/* Data Table */}
             <div className="card p-3">
                 <DataTable<TaskInstance>
@@ -209,8 +194,6 @@ export function TaskInstancePage() {
                     columns={columns}
                     keyField="id"
                     searchable={false}
-                    onEdit={undefined}
-                    onDelete={undefined}
                     isLoading={isLoading}
                     selectable
                     onSelectionChange={setSelectedRows}

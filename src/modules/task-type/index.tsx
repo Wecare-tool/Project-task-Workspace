@@ -150,8 +150,6 @@ export function TaskTypePage() {
                     columns={columns}
                     keyField="id"
                     searchable={false}
-                    onEdit={undefined}
-                    onDelete={undefined}
                     isLoading={isLoading}
                     selectable
                     onSelectionChange={setSelectedRows}

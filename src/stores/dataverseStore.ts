@@ -1,10 +1,10 @@
-import { create } from 'zustand';
 import {
     fetchTableData,
     DATAVERSE_TABLES,
     createRecord,
     updateRecord,
-    deleteRecord
+    deleteRecord,
+    deactivateRecord
 } from '@services/dataverse';
 import {
     mapDataverseTaskType,
@@ -19,6 +19,7 @@ import {
     mapDataverseTaskInstance,
     mapDataverseEventInstance,
     mapDataverseActionInstance,
+    mapDataverseProject,
 } from '@services/dataverseTypes';
 import type {
     DataverseTaskType,
@@ -35,10 +36,12 @@ import type {
     DataverseTaskTypeAttributeMapping,
     TaskTypeAttributeMapping,
     DataverseTaskDependency,
-    TaskDependency,
+    TaskDependencyNew,
     DataverseTaskInstance,
     DataverseEventInstance,
-    DataverseActionInstance
+    DataverseActionInstance,
+    DataverseProject,
+    ProjectNew,
 } from '@services/dataverseTypes';
 import type { TaskType, TaskTypeAttribute, EventType, TaskInstance, EventInstance, ActionInstance } from '@/types';
 import { toast } from '@stores/index';
@@ -53,11 +56,12 @@ interface DataverseState {
     taskInstances: TaskInstance[];
     eventInstances: EventInstance[];
     actionInstances: ActionInstance[];
+    projects: ProjectNew[];
     // Mapping data
     eventTypeTaskTypeMappings: EventTypeTaskTypeMapping[];
     taskTypeActions: TaskTypeAction[];
     taskTypeAttributeMappings: TaskTypeAttributeMapping[];
-    taskDependencies: TaskDependency[];
+    taskDependencies: TaskDependencyNew[];
     // State
     isLoading: boolean;
     isInitialized: boolean;
@@ -76,9 +80,32 @@ interface DataverseState {
     refreshTaskTypeActions: () => Promise<void>;
     refreshTaskTypeAttributeMappings: () => Promise<void>;
     refreshTaskDependencies: () => Promise<void>;
+    refreshProjects: () => Promise<void>;
     createTaskType: (data: Partial<DataverseTaskType>) => Promise<void>;
     updateTaskType: (id: string, data: Partial<DataverseTaskType>) => Promise<void>;
-    deleteTaskType: (id: string) => Promise<void>;
+    deactivateTaskType: (id: string) => Promise<void>;
+    // Projects
+    createProject: (data: Partial<DataverseProject>) => Promise<void>;
+    updateProject: (id: string, data: Partial<DataverseProject>) => Promise<void>;
+    deactivateProject: (id: string) => Promise<void>;
+    // Task Instances
+    createTaskInstance: (data: Partial<DataverseTaskInstance>) => Promise<void>;
+    updateTaskInstance: (id: string, data: Partial<DataverseTaskInstance>) => Promise<void>;
+    deactivateTaskInstance: (id: string) => Promise<void>;
+    // Task Dependencies
+    createTaskDependency: (data: Partial<DataverseTaskDependency>) => Promise<void>;
+    updateTaskDependency: (id: string, data: Partial<DataverseTaskDependency>) => Promise<void>;
+    deactivateTaskDependency: (id: string) => Promise<void>;
+    // Mappings
+    createEventTypeTaskTypeMapping: (data: Partial<DataverseEventTypeTaskTypeMapping>) => Promise<void>;
+    updateEventTypeTaskTypeMapping: (id: string, data: Partial<DataverseEventTypeTaskTypeMapping>) => Promise<void>;
+    deactivateEventTypeTaskTypeMapping: (id: string) => Promise<void>;
+    createTaskTypeAction: (data: Partial<DataverseTaskTypeAction>) => Promise<void>;
+    updateTaskTypeAction: (id: string, data: Partial<DataverseTaskTypeAction>) => Promise<void>;
+    deactivateTaskTypeAction: (id: string) => Promise<void>;
+    createTaskTypeAttributeMapping: (data: Partial<DataverseTaskTypeAttributeMapping>) => Promise<void>;
+    updateTaskTypeAttributeMapping: (id: string, data: Partial<DataverseTaskTypeAttributeMapping>) => Promise<void>;
+    deactivateTaskTypeAttributeMapping: (id: string) => Promise<void>;
 }
 
 export const useDataverseStore = create<DataverseState>((set, get) => ({
@@ -94,6 +121,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
     taskTypeActions: [],
     taskTypeAttributeMappings: [],
     taskDependencies: [],
+    projects: [],
     isLoading: false,
     isInitialized: false,
     error: null,
@@ -116,6 +144,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
                 get().refreshTaskInstances(),
                 get().refreshEventInstances(),
                 get().refreshActionInstances(),
+                get().refreshProjects(),
             ]);
 
             // Log failures
@@ -280,6 +309,17 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
+    refreshProjects: async () => {
+        try {
+            const config = DATAVERSE_TABLES.projects;
+            const data = await fetchTableData<DataverseProject>(config.name, config.columns);
+            set({ projects: data.map(mapDataverseProject) });
+        } catch (error) {
+            console.error('Error fetching projects:', error);
+            throw error;
+        }
+    },
+
     createTaskType: async (data) => {
         set({ isLoading: true });
         try {
@@ -308,14 +348,270 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    deleteTaskType: async (id) => {
+    deactivateTaskType: async (id) => {
         set({ isLoading: true });
         try {
-            await deleteRecord(DATAVERSE_TABLES.taskTypes.name, id);
+            await deactivateRecord(DATAVERSE_TABLES.taskTypes.name, id);
             await get().refreshTaskTypes();
-            toast.success('Success', 'Task type deleted');
+            toast.success('Success', 'Task type deactivated');
         } catch (error) {
-            toast.error('Error', 'Failed to delete task type');
+            toast.error('Error', 'Failed to deactivate task type');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // Projects
+    createProject: async (data) => {
+        set({ isLoading: true });
+        try {
+            await createRecord(DATAVERSE_TABLES.projects.name, data);
+            await get().refreshProjects();
+            toast.success('Success', 'Project created');
+        } catch (error) {
+            toast.error('Error', 'Failed to create project');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    updateProject: async (id, data) => {
+        set({ isLoading: true });
+        try {
+            await updateRecord(DATAVERSE_TABLES.projects.name, id, data);
+            await get().refreshProjects();
+            toast.success('Success', 'Project updated');
+        } catch (error) {
+            toast.error('Error', 'Failed to update project');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    deactivateProject: async (id) => {
+        set({ isLoading: true });
+        try {
+            await deactivateRecord(DATAVERSE_TABLES.projects.name, id);
+            await get().refreshProjects();
+            toast.success('Success', 'Project deactivated');
+        } catch (error) {
+            toast.error('Error', 'Failed to deactivate project');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // Task Instances
+    createTaskInstance: async (data) => {
+        set({ isLoading: true });
+        try {
+            await createRecord(DATAVERSE_TABLES.taskInstances.name, data);
+            await get().refreshTaskInstances();
+            toast.success('Success', 'Task instance created');
+        } catch (error) {
+            toast.error('Error', 'Failed to create task instance');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    updateTaskInstance: async (id, data) => {
+        set({ isLoading: true });
+        try {
+            await updateRecord(DATAVERSE_TABLES.taskInstances.name, id, data);
+            await get().refreshTaskInstances();
+            toast.success('Success', 'Task instance updated');
+        } catch (error) {
+            toast.error('Error', 'Failed to update task instance');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    deactivateTaskInstance: async (id) => {
+        set({ isLoading: true });
+        try {
+            await deactivateRecord(DATAVERSE_TABLES.taskInstances.name, id);
+            await get().refreshTaskInstances();
+            toast.success('Success', 'Task instance deactivated');
+        } catch (error) {
+            toast.error('Error', 'Failed to deactivate task instance');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // Task Dependencies
+    createTaskDependency: async (data) => {
+        set({ isLoading: true });
+        try {
+            await createRecord(DATAVERSE_TABLES.taskDependencies.name, data);
+            await get().refreshTaskDependencies();
+            toast.success('Success', 'Task dependency created');
+        } catch (error) {
+            toast.error('Error', 'Failed to create task dependency');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    updateTaskDependency: async (id, data) => {
+        set({ isLoading: true });
+        try {
+            await updateRecord(DATAVERSE_TABLES.taskDependencies.name, id, data);
+            await get().refreshTaskDependencies();
+            toast.success('Success', 'Task dependency updated');
+        } catch (error) {
+            toast.error('Error', 'Failed to update task dependency');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    deactivateTaskDependency: async (id) => {
+        set({ isLoading: true });
+        try {
+            await deactivateRecord(DATAVERSE_TABLES.taskDependencies.name, id);
+            await get().refreshTaskDependencies();
+            toast.success('Success', 'Task dependency deactivated');
+        } catch (error) {
+            toast.error('Error', 'Failed to deactivate task dependency');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // Mappings
+    createEventTypeTaskTypeMapping: async (data) => {
+        set({ isLoading: true });
+        try {
+            await createRecord(DATAVERSE_TABLES.eventTypeTaskTypeMappings.name, data);
+            await get().refreshEventTypeTaskTypeMappings();
+            toast.success('Success', 'Mapping created');
+        } catch (error) {
+            toast.error('Error', 'Failed to create mapping');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    updateEventTypeTaskTypeMapping: async (id, data) => {
+        set({ isLoading: true });
+        try {
+            await updateRecord(DATAVERSE_TABLES.eventTypeTaskTypeMappings.name, id, data);
+            await get().refreshEventTypeTaskTypeMappings();
+            toast.success('Success', 'Mapping updated');
+        } catch (error) {
+            toast.error('Error', 'Failed to update mapping');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    deactivateEventTypeTaskTypeMapping: async (id) => {
+        set({ isLoading: true });
+        try {
+            await deactivateRecord(DATAVERSE_TABLES.eventTypeTaskTypeMappings.name, id);
+            await get().refreshEventTypeTaskTypeMappings();
+            toast.success('Success', 'Mapping deactivated');
+        } catch (error) {
+            toast.error('Error', 'Failed to deactivate mapping');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    createTaskTypeAction: async (data) => {
+        set({ isLoading: true });
+        try {
+            await createRecord(DATAVERSE_TABLES.taskTypeActions.name, data);
+            await get().refreshTaskTypeActions();
+            toast.success('Success', 'Task Type Action created');
+        } catch (error) {
+            toast.error('Error', 'Failed to create Task Type Action');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    updateTaskTypeAction: async (id, data) => {
+        set({ isLoading: true });
+        try {
+            await updateRecord(DATAVERSE_TABLES.taskTypeActions.name, id, data);
+            await get().refreshTaskTypeActions();
+            toast.success('Success', 'Task Type Action updated');
+        } catch (error) {
+            toast.error('Error', 'Failed to update Task Type Action');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    deactivateTaskTypeAction: async (id) => {
+        set({ isLoading: true });
+        try {
+            await deactivateRecord(DATAVERSE_TABLES.taskTypeActions.name, id);
+            await get().refreshTaskTypeActions();
+            toast.success('Success', 'Task Type Action deactivated');
+        } catch (error) {
+            toast.error('Error', 'Failed to deactivate Task Type Action');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    createTaskTypeAttributeMapping: async (data) => {
+        set({ isLoading: true });
+        try {
+            await createRecord(DATAVERSE_TABLES.taskTypeAttributeMappings.name, data);
+            await get().refreshTaskTypeAttributeMappings();
+            toast.success('Success', 'Attribute Mapping created');
+        } catch (error) {
+            toast.error('Error', 'Failed to create Attribute Mapping');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    updateTaskTypeAttributeMapping: async (id, data) => {
+        set({ isLoading: true });
+        try {
+            await updateRecord(DATAVERSE_TABLES.taskTypeAttributeMappings.name, id, data);
+            await get().refreshTaskTypeAttributeMappings();
+            toast.success('Success', 'Attribute Mapping updated');
+        } catch (error) {
+            toast.error('Error', 'Failed to update Attribute Mapping');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    deactivateTaskTypeAttributeMapping: async (id) => {
+        set({ isLoading: true });
+        try {
+            await deactivateRecord(DATAVERSE_TABLES.taskTypeAttributeMappings.name, id);
+            await get().refreshTaskTypeAttributeMappings();
+            toast.success('Success', 'Attribute Mapping deactivated');
+        } catch (error) {
+            toast.error('Error', 'Failed to deactivate Attribute Mapping');
             throw error;
         } finally {
             set({ isLoading: false });

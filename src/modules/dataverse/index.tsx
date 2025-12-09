@@ -334,7 +334,7 @@ export function DataversePage() {
                             ) : (
                                 taskDependencies.map((item) => (
                                     <tr key={item.id}>
-                                        <td className="font-medium">{item.name}</td>
+                                        <td className="font-medium">{item.name || '-'}</td>
                                         <td>{item.eventTypeId || '-'}</td>
                                         <td>{item.parentTaskId || '-'}</td>
                                         <td>{item.childTaskId || '-'}</td>

@@ -156,7 +156,7 @@ export function ActionInstancePage() {
                 size="sm"
                 onClick={() => { setSelected(null); setIsFormOpen(true); }}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
-                title="Added new action (c)"
+                title="Add new action (c)"
             >
                 Add new
             </Button>
@@ -203,8 +203,6 @@ export function ActionInstancePage() {
                     columns={columns}
                     keyField="id"
                     searchable={false}
-                    onEdit={undefined}
-                    onDelete={undefined}
                     isLoading={isLoading}
                     selectable
                     onSelectionChange={setSelectedRows}
