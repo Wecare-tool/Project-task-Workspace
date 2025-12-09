@@ -2,6 +2,7 @@
   "name": "pm2",
   "private": true,
   "version": "0.0.1",
+  "homepage": "https://wecare-tool.github.io/Project-task-Workspace/",
   "type": "module",
   "scripts": {
     "dev": "vite",
