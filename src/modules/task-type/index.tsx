@@ -56,7 +56,7 @@ export function TaskTypePage() {
     };
 
     // Filter task types based on search query
-    const filteredTaskTypes = taskTypes.filter(task =>
+    const filteredTaskTypes = taskTypes.filter((task: any) =>
         task.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.description?.toLowerCase().includes(searchQuery.toLowerCase())

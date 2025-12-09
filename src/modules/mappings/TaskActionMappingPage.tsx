@@ -25,8 +25,8 @@ export function TaskActionMappingPage() {
         }
     }, [isInitialized, isLoading, initialize]);
 
-    const getTaskTypeName = (id: string) => taskTypes.find(t => t.id === id)?.name || id.slice(0, 8);
-    const getActionTypeName = (id: string) => actionTypeNews.find(a => a.id === id)?.name || id.slice(0, 8);
+    const getTaskTypeName = (id: string) => taskTypes.find((t: any) => t.id === id)?.name || id.slice(0, 8);
+    const getActionTypeName = (id: string) => actionTypeNews.find((a: any) => a.id === id)?.name || id.slice(0, 8);
 
     const columns: TableColumn<TaskTypeAction>[] = [
         { key: 'name', label: 'Name', sortable: true },
@@ -106,7 +106,7 @@ export function TaskActionMappingPage() {
                                 </label>
                                 <select className="input w-full text-sm h-8" title="Lọc theo task type">
                                     <option value="">Tất cả</option>
-                                    {taskTypes.map(t => (
+                                    {taskTypes.map((t: any) => (
                                         <option key={t.id} value={t.id}>{t.name}</option>
                                     ))}
                                 </select>
@@ -117,7 +117,7 @@ export function TaskActionMappingPage() {
                                 </label>
                                 <select className="input w-full text-sm h-8" title="Lọc theo action type">
                                     <option value="">Tất cả</option>
-                                    {actionTypeNews.map(a => (
+                                    {actionTypeNews.map((a: any) => (
                                         <option key={a.id} value={a.id}>{a.name}</option>
                                     ))}
                                 </select>

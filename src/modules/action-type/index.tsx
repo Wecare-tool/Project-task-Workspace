@@ -44,7 +44,7 @@ export function ActionTypePage() {
     };
 
     // Filter based on search query
-    const filteredData = actionTypeNews.filter(item =>
+    const filteredData = actionTypeNews.filter((item: any) =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );

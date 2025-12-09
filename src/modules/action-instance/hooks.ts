@@ -8,13 +8,13 @@ export function useActionInstances() {
     // In DataverseStore: actionTypeNews maps to ActionTypeNew. 
     // In ActionInstancePage: actionTypeOptions maps name and id.
 
-    const actionTypeOptions = useMemo(() => actionTypes.map(a => ({ value: a.id, label: a.name })), [actionTypes]);
-    const taskOptions = useMemo(() => tasks.map(t => ({ value: t.id, label: t.title })), [tasks]);
+    const actionTypeOptions = useMemo(() => actionTypes.map((a: any) => ({ value: a.id, label: a.name })), [actionTypes]);
+    const taskOptions = useMemo(() => tasks.map((t: any) => ({ value: t.id, label: t.title })), [tasks]);
 
     const refresh = refreshActionInstances;
 
-    const getActionTypeName = useCallback((id: string) => actionTypes.find(a => a.id === id)?.name || '-', [actionTypes]);
-    const getTaskName = useCallback((id: string) => tasks.find(t => t.id === id)?.title || '-', [tasks]);
+    const getActionTypeName = useCallback((id: string) => actionTypes.find((a: any) => a.id === id)?.name || '-', [actionTypes]);
+    const getTaskName = useCallback((id: string) => tasks.find((t: any) => t.id === id)?.title || '-', [tasks]);
 
     const create = useCallback(async (_data: any) => {
         console.warn('Create not implemented for Dataverse actions yet');

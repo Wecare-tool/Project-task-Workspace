@@ -59,7 +59,7 @@ export function DailyTaskPage() {
     const formFields = getTaskFormFields(projectOptions, taskTypeOptions);
 
     // Filter based on search query
-    const filteredData = tasks.filter(task =>
+    const filteredData = tasks.filter((task: any) =>
         task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.assignee?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -70,7 +70,7 @@ export function DailyTaskPage() {
     // Calculate overdue tasks
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const overdueTasks = tasks.filter(t => {
+    const overdueTasks = tasks.filter((t: any) => {
         if (!t.dueDate) return false;
         const dueDate = new Date(t.dueDate);
         return dueDate < today;
@@ -217,8 +217,8 @@ export function DailyTaskPage() {
                 {[
                     { label: 'Total Due', value: tasks.length, color: 'text-dark-900' },
                     { label: 'Overdue', value: overdueTasks.length, color: 'text-danger-600' },
-                    { label: 'In Progress', value: tasks.filter(t => t.status === 'in-progress').length, color: 'text-primary-600' },
-                    { label: 'Blocked', value: tasks.filter(t => t.status === 'blocked').length, color: 'text-warning-600' },
+                    { label: 'In Progress', value: tasks.filter((t: any) => t.status === 'in-progress').length, color: 'text-primary-600' },
+                    { label: 'Blocked', value: tasks.filter((t: any) => t.status === 'blocked').length, color: 'text-warning-600' },
                 ].map(stat => (
                     <div key={stat.label} className="card p-3 text-center">
                         <div className="text-xs text-dark-500">{stat.label}</div>

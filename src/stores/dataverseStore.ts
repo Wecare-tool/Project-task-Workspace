@@ -1,9 +1,9 @@
+import { create } from 'zustand';
 import {
     fetchTableData,
     DATAVERSE_TABLES,
     createRecord,
     updateRecord,
-    deleteRecord,
     deactivateRecord
 } from '@services/dataverse';
 import {
@@ -108,7 +108,7 @@ interface DataverseState {
     deactivateTaskTypeAttributeMapping: (id: string) => Promise<void>;
 }
 
-export const useDataverseStore = create<DataverseState>((set, get) => ({
+export const useDataverseStore = create<DataverseState>((set: any, get: any) => ({
     taskTypes: [],
     taskTypeAttributes: [],
     eventTypes: [],
@@ -320,7 +320,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    createTaskType: async (data) => {
+    createTaskType: async (data: any) => {
         set({ isLoading: true });
         try {
             await createRecord(DATAVERSE_TABLES.taskTypes.name, data);
@@ -334,7 +334,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    updateTaskType: async (id, data) => {
+    updateTaskType: async (id: any, data: any) => {
         set({ isLoading: true });
         try {
             await updateRecord(DATAVERSE_TABLES.taskTypes.name, id, data);
@@ -348,7 +348,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    deactivateTaskType: async (id) => {
+    deactivateTaskType: async (id: any) => {
         set({ isLoading: true });
         try {
             await deactivateRecord(DATAVERSE_TABLES.taskTypes.name, id);
@@ -363,7 +363,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
     },
 
     // Projects
-    createProject: async (data) => {
+    createProject: async (data: any) => {
         set({ isLoading: true });
         try {
             await createRecord(DATAVERSE_TABLES.projects.name, data);
@@ -377,7 +377,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    updateProject: async (id, data) => {
+    updateProject: async (id: any, data: any) => {
         set({ isLoading: true });
         try {
             await updateRecord(DATAVERSE_TABLES.projects.name, id, data);
@@ -391,7 +391,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    deactivateProject: async (id) => {
+    deactivateProject: async (id: any) => {
         set({ isLoading: true });
         try {
             await deactivateRecord(DATAVERSE_TABLES.projects.name, id);
@@ -406,7 +406,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
     },
 
     // Task Instances
-    createTaskInstance: async (data) => {
+    createTaskInstance: async (data: any) => {
         set({ isLoading: true });
         try {
             await createRecord(DATAVERSE_TABLES.taskInstances.name, data);
@@ -420,7 +420,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    updateTaskInstance: async (id, data) => {
+    updateTaskInstance: async (id: any, data: any) => {
         set({ isLoading: true });
         try {
             await updateRecord(DATAVERSE_TABLES.taskInstances.name, id, data);
@@ -434,7 +434,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    deactivateTaskInstance: async (id) => {
+    deactivateTaskInstance: async (id: any) => {
         set({ isLoading: true });
         try {
             await deactivateRecord(DATAVERSE_TABLES.taskInstances.name, id);
@@ -449,7 +449,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
     },
 
     // Task Dependencies
-    createTaskDependency: async (data) => {
+    createTaskDependency: async (data: any) => {
         set({ isLoading: true });
         try {
             await createRecord(DATAVERSE_TABLES.taskDependencies.name, data);
@@ -463,7 +463,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    updateTaskDependency: async (id, data) => {
+    updateTaskDependency: async (id: any, data: any) => {
         set({ isLoading: true });
         try {
             await updateRecord(DATAVERSE_TABLES.taskDependencies.name, id, data);
@@ -477,7 +477,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    deactivateTaskDependency: async (id) => {
+    deactivateTaskDependency: async (id: any) => {
         set({ isLoading: true });
         try {
             await deactivateRecord(DATAVERSE_TABLES.taskDependencies.name, id);
@@ -492,7 +492,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
     },
 
     // Mappings
-    createEventTypeTaskTypeMapping: async (data) => {
+    createEventTypeTaskTypeMapping: async (data: any) => {
         set({ isLoading: true });
         try {
             await createRecord(DATAVERSE_TABLES.eventTypeTaskTypeMappings.name, data);
@@ -506,7 +506,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    updateEventTypeTaskTypeMapping: async (id, data) => {
+    updateEventTypeTaskTypeMapping: async (id: any, data: any) => {
         set({ isLoading: true });
         try {
             await updateRecord(DATAVERSE_TABLES.eventTypeTaskTypeMappings.name, id, data);
@@ -520,7 +520,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    deactivateEventTypeTaskTypeMapping: async (id) => {
+    deactivateEventTypeTaskTypeMapping: async (id: any) => {
         set({ isLoading: true });
         try {
             await deactivateRecord(DATAVERSE_TABLES.eventTypeTaskTypeMappings.name, id);
@@ -534,7 +534,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    createTaskTypeAction: async (data) => {
+    createTaskTypeAction: async (data: any) => {
         set({ isLoading: true });
         try {
             await createRecord(DATAVERSE_TABLES.taskTypeActions.name, data);
@@ -548,7 +548,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    updateTaskTypeAction: async (id, data) => {
+    updateTaskTypeAction: async (id: any, data: any) => {
         set({ isLoading: true });
         try {
             await updateRecord(DATAVERSE_TABLES.taskTypeActions.name, id, data);
@@ -562,7 +562,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    deactivateTaskTypeAction: async (id) => {
+    deactivateTaskTypeAction: async (id: any) => {
         set({ isLoading: true });
         try {
             await deactivateRecord(DATAVERSE_TABLES.taskTypeActions.name, id);
@@ -576,7 +576,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    createTaskTypeAttributeMapping: async (data) => {
+    createTaskTypeAttributeMapping: async (data: any) => {
         set({ isLoading: true });
         try {
             await createRecord(DATAVERSE_TABLES.taskTypeAttributeMappings.name, data);
@@ -590,7 +590,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    updateTaskTypeAttributeMapping: async (id, data) => {
+    updateTaskTypeAttributeMapping: async (id: any, data: any) => {
         set({ isLoading: true });
         try {
             await updateRecord(DATAVERSE_TABLES.taskTypeAttributeMappings.name, id, data);
@@ -604,7 +604,7 @@ export const useDataverseStore = create<DataverseState>((set, get) => ({
         }
     },
 
-    deactivateTaskTypeAttributeMapping: async (id) => {
+    deactivateTaskTypeAttributeMapping: async (id: any) => {
         set({ isLoading: true });
         try {
             await deactivateRecord(DATAVERSE_TABLES.taskTypeAttributeMappings.name, id);

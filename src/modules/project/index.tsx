@@ -41,7 +41,7 @@ export function ProjectPage() {
         { key: 'endDate', label: 'Ngày kết thúc', render: (v) => v ? formatDate(v as Date) : '-' },
     ];
 
-    const filteredProjects = projects.filter(p =>
+    const filteredProjects = projects.filter((p: any) =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.department?.toLowerCase().includes(searchQuery.toLowerCase()))
     );

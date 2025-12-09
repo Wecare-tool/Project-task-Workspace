@@ -8,14 +8,14 @@ export function useTaskInstances() {
     // Fallback to local project storage for now as projects are not in Dataverse yet
     const projects = useMemo(() => projectStorage.getAll(), []);
 
-    const projectOptions = useMemo(() => projects.map(p => ({ value: p.id, label: p.name })), [projects]);
-    const taskTypeOptions = useMemo(() => taskTypes.map(t => ({ value: t.id, label: t.name })), [taskTypes]);
+    const projectOptions = useMemo(() => projects.map((p: any) => ({ value: p.id, label: p.name })), [projects]);
+    const taskTypeOptions = useMemo(() => taskTypes.map((t: any) => ({ value: t.id, label: t.name })), [taskTypes]);
 
     const refresh = refreshTaskInstances;
 
-    const getById = useCallback((id: string) => tasks.find(t => t.id === id), [tasks]);
-    const getProjectName = useCallback((id: string) => projects.find(p => p.id === id)?.name || '-', [projects]);
-    const getTaskTypeName = useCallback((id: string) => taskTypes.find(t => t.id === id)?.name || '-', [taskTypes]);
+    const getById = useCallback((id: string) => tasks.find((t: any) => t.id === id), [tasks]);
+    const getProjectName = useCallback((id: string) => projects.find((p: any) => p.id === id)?.name || '-', [projects]);
+    const getTaskTypeName = useCallback((id: string) => taskTypes.find((t: any) => t.id === id)?.name || '-', [taskTypes]);
 
     // Disable CRUD writes for now as they are handled via Dataverse (read-only in this step or need impl)
     const create = useCallback(async (_data: any) => {

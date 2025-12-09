@@ -11,7 +11,7 @@ export function useTaskTypes() {
         taskTypes,
         isLoading,
         refresh: refreshTaskTypes,
-        getById: (id: string) => taskTypes.find(t => t.id === id),
+        getById: (id: string) => taskTypes.find((t: any) => t.id === id),
         // CRUD operations disabled - using read-only from Dataverse
         create: async (_data: any) => { console.warn('Create from Dataverse not implemented'); },
         update: async (_id: string, _data: any) => { console.warn('Update from Dataverse not implemented'); },

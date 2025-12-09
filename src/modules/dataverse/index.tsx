@@ -106,7 +106,7 @@ export function DataversePage() {
                             {taskTypes.length === 0 ? (
                                 <tr><td colSpan={5} className="text-center py-8 text-dark-400">No data loaded</td></tr>
                             ) : (
-                                taskTypes.map((item) => (
+                                taskTypes.map((item: any) => (
                                     <tr key={item.id}>
                                         <td className="font-medium">{item.name}</td>
                                         <td>{item.code}</td>
@@ -153,7 +153,7 @@ export function DataversePage() {
                             {taskTypeAttributes.length === 0 ? (
                                 <tr><td colSpan={4} className="text-center py-8 text-dark-400">No data loaded</td></tr>
                             ) : (
-                                taskTypeAttributes.map((item) => (
+                                taskTypeAttributes.map((item: any) => (
                                     <tr key={item.id}>
                                         <td className="font-medium">{item.label}</td>
                                         <td>{item.name}</td>
@@ -200,7 +200,7 @@ export function DataversePage() {
                             {eventTypes.length === 0 ? (
                                 <tr><td colSpan={5} className="text-center py-8 text-dark-400">No data loaded</td></tr>
                             ) : (
-                                eventTypes.map((item) => (
+                                eventTypes.map((item: any) => (
                                     <tr key={item.id}>
                                         <td className="font-medium">{item.name}</td>
                                         <td>{item.code}</td>
@@ -245,7 +245,7 @@ export function DataversePage() {
                             {actionTypeNews.length === 0 ? (
                                 <tr><td colSpan={2} className="text-center py-8 text-dark-400">No data loaded</td></tr>
                             ) : (
-                                actionTypeNews.map((item) => (
+                                actionTypeNews.map((item: any) => (
                                     <tr key={item.id}>
                                         <td className="font-medium">{item.name}</td>
                                         <td>{item.description || '-'}</td>
@@ -287,7 +287,7 @@ export function DataversePage() {
                             {eventSourceTypes.length === 0 ? (
                                 <tr><td colSpan={2} className="text-center py-8 text-dark-400">No data loaded</td></tr>
                             ) : (
-                                eventSourceTypes.map((item) => (
+                                eventSourceTypes.map((item: any) => (
                                     <tr key={item.id}>
                                         <td className="font-medium">{item.name}</td>
                                         <td>{item.description || '-'}</td>
@@ -332,7 +332,7 @@ export function DataversePage() {
                             {taskDependencies.length === 0 ? (
                                 <tr><td colSpan={5} className="text-center py-8 text-dark-400">No data loaded</td></tr>
                             ) : (
-                                taskDependencies.map((item) => (
+                                taskDependencies.map((item: any) => (
                                     <tr key={item.id}>
                                         <td className="font-medium">{item.name || '-'}</td>
                                         <td>{item.eventTypeId || '-'}</td>

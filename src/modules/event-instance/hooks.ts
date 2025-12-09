@@ -9,13 +9,13 @@ export function useEventInstances() {
     // Ideally we should use useDataverse().taskInstances here
     const { taskInstances: tasks } = useDataverse();
 
-    const eventTypeOptions = useMemo(() => eventTypes.map(e => ({ value: e.id, label: e.name })), [eventTypes]);
-    const taskOptions = useMemo(() => tasks.map(t => ({ value: t.id, label: t.title })), [tasks]);
+    const eventTypeOptions = useMemo(() => eventTypes.map((e: any) => ({ value: e.id, label: e.name })), [eventTypes]);
+    const taskOptions = useMemo(() => tasks.map((t: any) => ({ value: t.id, label: t.title })), [tasks]);
 
     const refresh = refreshEventInstances;
 
-    const getEventTypeName = useCallback((id: string) => eventTypes.find(e => e.id === id)?.name || '-', [eventTypes]);
-    const getTaskName = useCallback((id: string) => tasks.find(t => t.id === id)?.title || '-', [tasks]);
+    const getEventTypeName = useCallback((id: string) => eventTypes.find((e: any) => e.id === id)?.name || '-', [eventTypes]);
+    const getTaskName = useCallback((id: string) => tasks.find((t: any) => t.id === id)?.title || '-', [tasks]);
 
     const create = useCallback(async (_data: any) => {
         console.warn('Create not implemented for Dataverse events yet');

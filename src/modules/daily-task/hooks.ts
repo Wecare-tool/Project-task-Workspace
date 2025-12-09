@@ -10,7 +10,7 @@ export function useDailyTasks() {
         const today = new Date();
         today.setHours(23, 59, 59, 999); // End of today
 
-        return tasks.filter(task => {
+        return tasks.filter((task: any) => {
             // Must not be completed
             if (task.status === 'completed') return false;
 

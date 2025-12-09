@@ -20,12 +20,12 @@ function useEventTypes() {
     const [localLoading] = useState(false);
 
     const sourceOptions = useMemo(() =>
-        eventSourceTypes.map(s => ({ value: s.id, label: s.name })),
+        eventSourceTypes.map((s: any) => ({ value: s.id, label: s.name })),
         [eventSourceTypes]
     );
 
     const getSourceName = (id: string) =>
-        eventSourceTypes.find(s => s.id === id)?.name || '-';
+        eventSourceTypes.find((s: any) => s.id === id)?.name || '-';
 
     return {
         items: eventTypes,
@@ -69,7 +69,7 @@ export function EventTypePage() {
     };
 
     // Filter based on search query
-    const filteredData = items.filter(item =>
+    const filteredData = items.filter((item: any) =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -157,7 +157,7 @@ export function EventTypePage() {
                                 </label>
                                 <select className="input w-full text-sm h-8" title="Lọc theo nguồn">
                                     <option value="">Tất cả</option>
-                                    {sourceOptions.map(opt => (
+                                    {sourceOptions.map((opt: any) => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>

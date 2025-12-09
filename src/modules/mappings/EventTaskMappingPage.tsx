@@ -25,8 +25,8 @@ export function EventTaskMappingPage() {
         }
     }, [isInitialized, isLoading, initialize]);
 
-    const getTaskTypeName = (id: string) => taskTypes.find(t => t.id === id)?.name || id.slice(0, 8);
-    const getEventTypeName = (id: string) => eventTypes.find(e => e.id === id)?.name || id.slice(0, 8);
+    const getTaskTypeName = (id: string) => taskTypes.find((t: any) => t.id === id)?.name || id.slice(0, 8);
+    const getEventTypeName = (id: string) => eventTypes.find((e: any) => e.id === id)?.name || id.slice(0, 8);
 
     const columns: TableColumn<EventTypeTaskTypeMapping>[] = [
         { key: 'name', label: 'Name', sortable: true },
@@ -104,7 +104,7 @@ export function EventTaskMappingPage() {
                                 </label>
                                 <select className="input w-full text-sm h-8" title="Lọc theo event type">
                                     <option value="">Tất cả</option>
-                                    {eventTypes.map(e => (
+                                    {eventTypes.map((e: any) => (
                                         <option key={e.id} value={e.id}>{e.name}</option>
                                     ))}
                                 </select>
@@ -115,7 +115,7 @@ export function EventTaskMappingPage() {
                                 </label>
                                 <select className="input w-full text-sm h-8" title="Lọc theo task type">
                                     <option value="">Tất cả</option>
-                                    {taskTypes.map(t => (
+                                    {taskTypes.map((t: any) => (
                                         <option key={t.id} value={t.id}>{t.name}</option>
                                     ))}
                                 </select>

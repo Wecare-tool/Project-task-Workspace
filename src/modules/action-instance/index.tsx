@@ -107,7 +107,7 @@ export function ActionInstancePage() {
     };
 
     // Filter based on search query
-    const filteredData = items.filter(item =>
+    const filteredData = items.filter((item: any) =>
         getActionTypeName(item.actionTypeId).toLowerCase().includes(searchQuery.toLowerCase()) ||
         getTaskName(item.taskInstanceId).toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||

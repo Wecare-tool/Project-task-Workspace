@@ -18,7 +18,7 @@ export function TaskTypeAttributePage() {
     ];
 
     // Filter based on search query
-    const filteredData = taskTypeAttributes.filter(item =>
+    const filteredData = taskTypeAttributes.filter((item: any) =>
         item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.group?.toLowerCase().includes(searchQuery.toLowerCase())

@@ -83,7 +83,7 @@ export function TaskInstancePage() {
     const formFields = getTaskFormFields(projectOptions, taskTypeOptions);
 
     // Filter based on search query
-    const filteredData = tasks.filter(task =>
+    const filteredData = tasks.filter((task: any) =>
         task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.assignee?.toLowerCase().includes(searchQuery.toLowerCase()) ||

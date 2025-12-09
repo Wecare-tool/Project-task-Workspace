@@ -97,7 +97,7 @@ export function EventInstancePage() {
     };
 
     // Filter based on search query
-    const filteredData = items.filter(item =>
+    const filteredData = items.filter((item: any) =>
         getEventTypeName(item.eventTypeId).toLowerCase().includes(searchQuery.toLowerCase()) ||
         getTaskName(item.taskInstanceId).toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.source?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -111,7 +111,7 @@ export function EventInstancePage() {
                 </label>
                 <select className="input w-full text-sm h-8" title="Lọc theo loại">
                     <option value="">Tất cả</option>
-                    {eventTypeOptions.map(e => (
+                    {eventTypeOptions.map((e: any) => (
                         <option key={e.value} value={e.value}>{e.label}</option>
                     ))}
                 </select>

@@ -42,7 +42,7 @@ export function EventSourceTypePage() {
     };
 
     // Filter based on search query
-    const filteredData = eventSourceTypes.filter(item =>
+    const filteredData = eventSourceTypes.filter((item: any) =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description?.toLowerCase().includes(searchQuery.toLowerCase())

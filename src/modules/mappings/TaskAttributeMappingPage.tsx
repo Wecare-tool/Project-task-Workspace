@@ -24,7 +24,7 @@ export function TaskAttributeMappingPage() {
         }
     }, [isInitialized, isLoading, initialize]);
 
-    const getTaskTypeName = (id: string) => taskTypes.find(t => t.id === id)?.name || id.slice(0, 8);
+    const getTaskTypeName = (id: string) => taskTypes.find((t: any) => t.id === id)?.name || id.slice(0, 8);
 
     const columns: TableColumn<TaskTypeAttributeMapping>[] = [
         { key: 'name', label: 'Name', sortable: true },
@@ -34,7 +34,7 @@ export function TaskAttributeMappingPage() {
     ];
 
     // Filter based on search query
-    const filteredData = taskTypeAttributeMappings.filter(item =>
+    const filteredData = taskTypeAttributeMappings.filter((item: any) =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         getTaskTypeName(item.taskTypeId).toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -101,7 +101,7 @@ export function TaskAttributeMappingPage() {
                                 </label>
                                 <select className="input w-full text-sm h-8" title="Lọc theo task type">
                                     <option value="">Tất cả</option>
-                                    {taskTypes.map(t => (
+                                    {taskTypes.map((t: any) => (
                                         <option key={t.id} value={t.id}>{t.name}</option>
                                     ))}
                                 </select>
