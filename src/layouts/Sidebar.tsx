@@ -9,7 +9,6 @@ import {
     Activity,
     Webhook,
     Calendar,
-    GitBranch,
     Settings,
     ChevronLeft,
     ChevronRight,

@@ -325,7 +325,7 @@ export function ProjectTaskSettings({ projectId }: Props) {
                         {filteredAvailableTaskTypes.length === 0 ? (
                             <div className="p-8 text-center text-neutral-500">
                                 <p className="mb-2">No matching task types found.</p>
-                                <Button variant="link" onClick={() => { setIsAddModalOpen(false); setIsCreateModalOpen(true); }}>
+                                <Button variant="ghost" onClick={() => { setIsAddModalOpen(false); setIsCreateModalOpen(true); }}>
                                     Create new task type
                                 </Button>
                             </div>

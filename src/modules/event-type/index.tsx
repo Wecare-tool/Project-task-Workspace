@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { z } from 'zod';
-import type { EventType, TaskType, TableColumn, FormField } from '@/types';
+import type { EventType, TableColumn, FormField } from '@/types';
 import { useDataverse } from '@stores/dataverseStore';
 import { Button, Tabs, TabsList, TabsTrigger, TabsContent } from '@components/ui';
 import { useToast } from '@/hooks/useToast';
@@ -21,17 +21,11 @@ export function EventTypePage() {
     const {
         eventTypes,
         eventSourceTypes,
-        taskTypes,
-        eventTypeTaskTypeMappings,
         isLoading,
         refreshEventTypes,
-        refreshEventTypeTaskTypeMappings,
-
         createEventType,
         updateEventType,
         deactivateEventType,
-        createEventTypeTaskTypeMapping,
-        setInitialTaskTypeForEventType,
     } = useDataverse();
     const toast = useToast();
     const [searchQuery, setSearchQuery] = useState('');
@@ -40,46 +34,12 @@ export function EventTypePage() {
     const [selected, setSelected] = useState<EventType | null>(null);
     const [deleteItem, setDeleteItem] = useState<EventType | null>(null);
     const [selectedRows, setSelectedRows] = useState<EventType[]>([]);
-    const [taskSearch, setTaskSearch] = useState('');
-    const [newTaskTypeId, setNewTaskTypeId] = useState('');
 
 
 
 
-    useEffect(() => {
-        if (selected && isFormOpen) {
-            refreshEventTypeTaskTypeMappings();
-        }
-    }, [isFormOpen, refreshEventTypeTaskTypeMappings, selected]);
-
-    const eventTaskMappings = useMemo(
-        () => eventTypeTaskTypeMappings.filter(m => m.eventTypeId === selected?.id),
-        [eventTypeTaskTypeMappings, selected?.id]
-    );
-
-    const eventTaskTypes = useMemo(
-        () => taskTypes.filter(t => eventTaskMappings.some(m => m.taskTypeId === t.id)),
-        [eventTaskMappings, taskTypes]
-    );
-
-    const initialTaskId = useMemo(
-        () => eventTaskMappings.find(m => m.isInitialTask)?.taskTypeId || '',
-        [eventTaskMappings]
-    );
-
-    const availableTaskTypes = useMemo(
-        () => taskTypes.filter(t => !eventTaskMappings.some(m => m.taskTypeId === t.id)),
-        [eventTaskMappings, taskTypes]
-    );
-
-    const filteredEventTasks = useMemo(
-        () => eventTaskTypes.filter(t => t.name.toLowerCase().includes(taskSearch.toLowerCase())),
-        [eventTaskTypes, taskSearch]
-    );
 
 
-
-    const getTaskTypeName = (id: string) => taskTypes.find(t => t.id === id)?.name || id.slice(0, 8);
 
     const columns: TableColumn<EventType>[] = [
         { key: 'name', label: 'Name', sortable: true },
@@ -133,35 +93,7 @@ export function EventTypePage() {
         await deactivateEventType(id);
     };
 
-    const handleAddTaskType = async () => {
-        if (!selected || !newTaskTypeId) {
-            toast.error('Select a task type to add');
-            return;
-        }
-        try {
-            await createEventTypeTaskTypeMapping({
-                crdfd_name: `ET-${selected.name}-${getTaskTypeName(newTaskTypeId)}`,
-                'crdfd_EventTypeId@odata.bind': `/central_eventtypes(${selected.id})`,
-                'crdfd_TaskTypeId@odata.bind': `/crdfd_task_types(${newTaskTypeId})`,
-                crdfd_isinitialtask: false,
-            });
-            await refreshEventTypeTaskTypeMappings();
-            setNewTaskTypeId('');
-            toast.success('Task type added');
-        } catch (error) {
-            toast.error('Failed to add task type');
-        }
-    };
 
-    const handleSetInitial = async (taskTypeId: string) => {
-        if (!selected) return;
-        try {
-            await setInitialTaskTypeForEventType(selected.id, taskTypeId);
-            await refreshEventTypeTaskTypeMappings();
-        } catch (error) {
-            // Toast handled in store
-        }
-    };
 
 
 
