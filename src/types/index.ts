@@ -114,6 +114,7 @@ export interface EventType extends BaseEntity {
 // ============================================
 
 export interface EventInstance extends BaseEntity {
+    name: string;
     eventTypeId: string;
     taskInstanceId: string;
     timestamp: Date;
@@ -121,17 +122,7 @@ export interface EventInstance extends BaseEntity {
     source?: string;
 }
 
-// ============================================
-// Task Dependency
-// ============================================
 
-export type DependencyType = 'blocks' | 'required-by' | 'relates-to';
-
-export interface TaskDependency extends BaseEntity {
-    parentTaskId: string;
-    childTaskId: string;
-    dependencyType: DependencyType;
-}
 
 // ============================================
 // Task Type Attribute
@@ -160,6 +151,7 @@ export interface TaskTypeEventTypeMapping {
     id: string;
     taskTypeId: string;
     eventTypeId: string;
+    isInitialTask?: boolean;
 }
 
 export interface TaskTypeActionTypeMapping {

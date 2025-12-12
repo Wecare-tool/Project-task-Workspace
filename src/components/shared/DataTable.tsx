@@ -29,6 +29,9 @@ interface DataTableProps<T> {
     actions?: (row: T) => React.ReactNode;
     selectable?: boolean;
     onSelectionChange?: (selected: T[]) => void;
+    onRowClick?: (row: T) => void;
+    currentPage?: number;
+    onPageChange?: (page: number) => void;
 }
 
 export function DataTable<T>({
@@ -47,13 +50,26 @@ export function DataTable<T>({
     actions,
     selectable = false,
     onSelectionChange,
+    onRowClick,
+    currentPage: controlledPage,
+    onPageChange,
 }: DataTableProps<T>) {
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState<string | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const [currentPage, setCurrentPage] = useState(1);
+    const [internalPage, setInternalPage] = useState(1);
     const [pageSize] = useState(initialPageSize);
     const [selectedRows, setSelectedRows] = useState<T[]>([]);
+
+    const currentPage = controlledPage ?? internalPage;
+
+    const handlePageChange = (newPage: number) => {
+        if (onPageChange) {
+            onPageChange(newPage);
+        } else {
+            setInternalPage(newPage);
+        }
+    };
 
     // Filter data by search
     const filteredData = useMemo(() => {
@@ -167,7 +183,7 @@ export function DataTable<T>({
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value);
-                            setCurrentPage(1);
+                            handlePageChange(1);
                         }}
                         leftIcon={<Search className="w-4 h-4" />}
                     />
@@ -243,7 +259,11 @@ export function DataTable<T>({
                                         </td>
                                     )}
                                     {columns.map((column) => (
-                                        <td key={column.key.toString()}>
+                                        <td
+                                            key={column.key.toString()}
+                                            onClick={() => onRowClick && onRowClick(row)}
+                                            className={cn(onRowClick && 'cursor-pointer')}
+                                        >
                                             {renderCell(row, column)}
                                         </td>
                                     ))}
@@ -309,7 +329,7 @@ export function DataTable<T>({
                         <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => setCurrentPage(prev => prev - 1)}
+                            onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                         >
                             <ChevronLeft className="w-4 h-4" />
@@ -332,7 +352,7 @@ export function DataTable<T>({
                                     key={pageNum}
                                     variant={currentPage === pageNum ? 'primary' : 'secondary'}
                                     size="sm"
-                                    onClick={() => setCurrentPage(pageNum)}
+                                    onClick={() => handlePageChange(pageNum)}
                                     className="w-9 h-9 p-0"
                                 >
                                     {pageNum}
@@ -343,7 +363,7 @@ export function DataTable<T>({
                         <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === paginationInfo.totalPages}
                         >
                             <ChevronRight className="w-4 h-4" />

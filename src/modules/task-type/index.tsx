@@ -1,135 +1,180 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { TaskType, TableColumn } from '@/types';
-import { Button } from '@components/ui'; // Input removed
-import { Modal, ConfirmModal, DataTable, FormBuilder, CommandBar } from '@components/shared';
-import { Plus } from 'lucide-react';
-import { useTaskTypes } from './hooks';
-import { taskTypeSchema, taskTypeFormFields, type TaskTypeFormData } from './schema';
+import { Button, Tabs, TabsList, TabsTrigger, TabsContent } from '@components/ui';
+import { TaskTypeAttributeSettings } from './TaskTypeAttributeSettings';
 import { useToast } from '@/hooks/useToast';
-
-const columns: TableColumn<TaskType>[] = [
-    {
-        key: 'code', label: 'Mã', sortable: true, width: '100px',
-        render: (v) => <span className="font-mono text-xs bg-neutral-100 px-2 py-0.5 rounded text-neutral-700">{v as string}</span>
-    },
-    {
-        key: 'name', label: 'Tên loại', sortable: true,
-        render: (v, row) => (
-            <div className="flex items-center gap-2">
-                {row.color && (
-                    <div
-                        className="w-3 h-3 rounded-full task-type-color-indicator"
-                        style={{ backgroundColor: row.color }}
-                    />
-                )}
-                <span className="font-medium text-neutral-900">{v as string}</span>
-            </div>
-        )
-    },
-    { key: 'description', label: 'Mô tả', render: (v) => <span className="text-neutral-500 line-clamp-1">{(v as string) || '-'}</span> },
-];
+import { useDataverse } from '@stores/dataverseStore';
+import { Modal, DataTable, FormBuilder, CommandBar, ConfirmModal, type CommandBarItem } from '@components/shared';
+import { Plus } from 'lucide-react';
+import { exportToCsv } from '@/utils/exportUtils';
+import { taskTypeSchema, taskTypeFormFields, type TaskTypeFormData } from './schema';
 
 export function TaskTypePage() {
+    const {
+        taskTypes,
+        taskTypeAttributes,
+        taskTypeAttributeMappings,
+        isLoading,
+        refreshTaskTypes,
+        refreshTaskTypeAttributeMappings,
+        createTaskType,
+        updateTaskType,
+        deactivateTaskType,
+        createTaskTypeAttributeMapping,
+        updateTaskTypeAttributeMapping,
+        deactivateTaskTypeAttributeMapping,
+    } = useDataverse();
     const toast = useToast();
-    const { taskTypes, isLoading, create, update, remove } = useTaskTypes();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selected, setSelected] = useState<TaskType | null>(null);
     const [deleteItems, setDeleteItems] = useState<TaskType[]>([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showFilters, setShowFilters] = useState(false);
     const [selectedRows, setSelectedRows] = useState<TaskType[]>([]);
+    const [selectedAttributeIds, setSelectedAttributeIds] = useState<string[]>([]);
+
+    const columns: TableColumn<TaskType>[] = [
+        { key: 'name', label: 'Name', sortable: true },
+        { key: 'description', label: 'Description', sortable: true, render: (v) => <span className="text-neutral-500 truncate block max-w-xs">{v as string || '-'}</span> },
+        { key: 'ownerType', label: 'Owner Type', render: (v) => v === '0' ? 'Tech' : v === '1' ? 'User' : '-' },
+    ];
+
+    const filteredData = taskTypes.filter((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const handleSubmit = async (data: TaskTypeFormData) => {
         try {
+            const payload = {
+                crdfd_name: data.name,
+                crdfd_brief: data.brief,
+                crdfd_ownertype: data.ownerType ? Number(data.ownerType) : undefined,
+                crdfd_taskdomain: data.taskDomain ? Number(data.taskDomain) : undefined
+            };
+
             if (selected) {
-                await update(selected.id, data);
-                toast.success('Cập nhật loại công việc thành công');
+                await updateTaskType(selected.id, payload);
             } else {
-                await create(data);
-                toast.success('Tạo loại công việc mới thành công');
+                await createTaskType(payload);
             }
             setIsFormOpen(false);
             setSelected(null);
         } catch (error) {
-            toast.error('Có lỗi xảy ra');
+            console.error(error);
         }
     };
 
-    // Filter task types based on search query
-    const filteredTaskTypes = taskTypes.filter((task: any) =>
-        task.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const selectedTaskMappings = useMemo(() => {
+        if (!selected) return [];
+        return taskTypeAttributeMappings.filter((m) => m.taskTypeId === selected.id && m.isVisible);
+    }, [selected, taskTypeAttributeMappings]);
 
-    const filterContent = (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                    Màu sắc
-                </label>
-                <select className="input w-full text-sm h-8" title="Lọc theo màu sắc">
-                    <option value="">Tất cả</option>
-                    <option value="blue">Xanh dương</option>
-                    <option value="green">Xanh lá</option>
-                    <option value="red">Đỏ</option>
-                </select>
-            </div>
-            <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                    Sắp xếp
-                </label>
-                <select className="input w-full text-sm h-8" title="Sắp xếp theo">
-                    <option value="name">Tên (A-Z)</option>
-                    <option value="code">Mã (A-Z)</option>
-                    <option value="date">Ngày tạo</option>
-                </select>
-            </div>
-            <div className="flex items-end">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowFilters(false)}
-                    className="w-full"
-                >
-                    Đóng bộ lọc
-                </Button>
-            </div>
-        </div>
-    );
+    useEffect(() => {
+        if (!isFormOpen || !selected) {
+            setSelectedAttributeIds([]);
+            return;
+        }
+        setSelectedAttributeIds(selectedTaskMappings.map((m) => m.attributeId));
+    }, [isFormOpen, selected, selectedTaskMappings]);
 
-    const actions = (
-        <>
-            <Button
-                variant="primary"
-                size="sm"
-                onClick={() => { setSelected(null); setIsFormOpen(true); }}
-                leftIcon={<Plus className="w-3.5 h-3.5" />}
-            >
-                Add new
-            </Button>
-            {selectedRows.length === 1 && (
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => { setSelected(selectedRows[0]); setIsFormOpen(true); }}
-                    leftIcon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>}
-                >
-                    Edit
-                </Button>
-            )}
-            {selectedRows.length > 0 && (
-                <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => setDeleteItems(selectedRows)}
-                    leftIcon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
-                >
-                    Delete {selectedRows.length > 1 ? `(${selectedRows.length})` : ''}
-                </Button>
-            )}
-        </>
-    );
+    // Attribute handling logic removed - moved to TaskTypeAttributeSettings
+
+    const handleSaveAttributes = async () => {
+        if (!selected) return;
+        try {
+            const existingMappings = taskTypeAttributeMappings.filter((m) => m.taskTypeId === selected.id);
+            const existingByAttr = new Map(existingMappings.map((m) => [m.attributeId, m]));
+
+            const toActivate = selectedAttributeIds;
+            const toDeactivate = existingMappings
+                .filter((m) => !selectedAttributeIds.includes(m.attributeId))
+                .map((m) => m.id);
+
+            await Promise.all([
+                ...toActivate.map(async (attrId) => {
+                    const mapping = existingByAttr.get(attrId);
+                    if (mapping) {
+                        if (!mapping.isVisible) {
+                            await updateTaskTypeAttributeMapping(mapping.id, { crdfd_taskinstanceuxvisible: true });
+                        }
+                    } else {
+                        const attribute = taskTypeAttributes.find((a) => a.id === attrId);
+                        await createTaskTypeAttributeMapping({
+                            crdfd_name: `${selected.name} - ${attribute?.label || ''}`,
+                            crdfd_taskinstanceuxvisible: true,
+                            _crdfd_attribute_value: attrId,
+                            _crdfd_tasktype_value: selected.id,
+                        });
+                    }
+                }),
+                ...toDeactivate.map((id) => deactivateTaskTypeAttributeMapping(id)),
+            ]);
+
+            await refreshTaskTypeAttributeMappings();
+            toast.success('Attributes saved');
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to save attributes');
+        }
+    };
+
+    const remove = async (id: string) => {
+        await deactivateTaskType(id);
+    };
+
+    const commandBarItems: CommandBarItem[] = [
+        {
+            key: 'new',
+            label: 'New',
+            icon: <Plus className="w-3.5 h-3.5" />,
+            onClick: () => { setSelected(null); setIsFormOpen(true); },
+            variant: 'ghost'
+        },
+        {
+            key: 'edit',
+            label: 'Edit',
+            icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
+            onClick: () => { if (selected) { setIsFormOpen(true); } else { toast.error('Select an item first'); } },
+            disabled: !selected,
+            variant: 'ghost',
+        },
+        {
+            key: 'deactivate',
+            label: 'Deactivate',
+            icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+            onClick: () => {
+                const itemsToDelete = selected ? [selected] : selectedRows;
+                if (itemsToDelete.length === 0) {
+                    toast.error('Select an item to deactivate');
+                    return;
+                }
+                setDeleteItems(itemsToDelete);
+            },
+            disabled: !selected && selectedRows.length === 0,
+            variant: 'ghost',
+        },
+        {
+            key: 'refresh',
+            label: 'Refresh',
+            icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+            onClick: async () => {
+                await refreshTaskTypes();
+                toast.success('Data refreshed');
+            },
+            variant: 'ghost'
+        },
+        {
+            key: 'export',
+            label: 'Export to Excel',
+            icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+            onClick: () => {
+                const dataToExport = filteredData;
+                exportToCsv(dataToExport, 'task-types');
+            },
+            variant: 'ghost'
+        }
+    ];
 
     return (
         <div className="space-y-2 animate-fade-in">
@@ -138,31 +183,58 @@ export function TaskTypePage() {
                 searchValue={searchQuery}
                 onFilterClick={() => setShowFilters(!showFilters)}
                 isFilterActive={showFilters}
-                filterContent={filterContent}
-                actions={actions}
-                selectedCount={selectedRows.length}
+                filterContent={
+                    <div className="p-2">
+                        <Button variant="ghost" size="sm" onClick={() => setShowFilters(false)} className="w-full">Close filters</Button>
+                    </div>
+                }
+                items={commandBarItems}
             />
 
-            {/* Data Table */}
             <div className="card p-3">
                 <DataTable<TaskType>
-                    data={filteredTaskTypes}
+                    data={filteredData}
                     columns={columns}
                     keyField="id"
                     searchable={false}
                     isLoading={isLoading}
-                    selectable
+                    emptyMessage={searchQuery ? "No matching task types found" : "No task types found"}
+                    onRowClick={(row) => { setSelected(row); setIsFormOpen(true); }}
+                    selectable={true}
                     onSelectionChange={setSelectedRows}
-                    emptyMessage={searchQuery ? "Không tìm thấy kết quả phù hợp" : "Chưa có loại công việc nào"}
                 />
             </div>
 
-            {/* Modals */}
             <Modal isOpen={isFormOpen} onClose={() => { setIsFormOpen(false); setSelected(null); }}
-                title={selected ? 'Chỉnh sửa' : 'Thêm loại công việc'} size="md">
-                <FormBuilder<TaskTypeFormData> fields={taskTypeFormFields} schema={taskTypeSchema}
-                    defaultValues={selected ? { name: selected.name, code: selected.code, description: selected.description, color: selected.color } : {}}
-                    onSubmit={handleSubmit} onCancel={() => setIsFormOpen(false)} isLoading={isLoading} />
+                title={selected ? 'Edit Task type' : 'Add Task type'} className="!w-[85%] h-[90%] max-w-none">
+                <Tabs defaultValue="general" className="w-full h-full flex flex-col">
+                    <TabsList>
+                        <TabsTrigger value="general">General</TabsTrigger>
+                        {selected && <TabsTrigger value="setting">Attribute setting</TabsTrigger>}
+                    </TabsList>
+                    <TabsContent value="general" className="flex-1 overflow-y-auto">
+                        <FormBuilder<TaskTypeFormData> fields={taskTypeFormFields} schema={taskTypeSchema}
+                            defaultValues={selected ? { name: selected.name, brief: selected.description } : {}}
+                            onSubmit={handleSubmit} onCancel={() => setIsFormOpen(false)} isLoading={isLoading} />
+                    </TabsContent>
+                    <TabsContent value="setting" className="p-4 space-y-4 overflow-y-auto">
+                        <div className="flex items-center justify-between gap-3 bg-white sticky top-0 z-10 py-2 border-b pb-4 mb-4">
+                            <div>
+                                <p className="font-medium text-lg">Attribute setting</p>
+                                <p className="text-sm text-neutral-500">Configure visible attributes for this task type</p>
+                            </div>
+                            <Button size="sm" variant="primary" onClick={handleSaveAttributes} disabled={isLoading}>
+                                Save Changes
+                            </Button>
+                        </div>
+
+                        <TaskTypeAttributeSettings
+                            attributes={taskTypeAttributes}
+                            selectedIds={selectedAttributeIds}
+                            onSelectionChange={setSelectedAttributeIds}
+                        />
+                    </TabsContent>
+                </Tabs>
             </Modal>
 
             <ConfirmModal isOpen={deleteItems.length > 0} onClose={() => setDeleteItems([])}
@@ -171,17 +243,18 @@ export function TaskTypePage() {
                         for (const item of deleteItems) {
                             await remove(item.id);
                         }
-                        toast.success('Đã xóa thành công');
+                        toast.success('Deactivated successfully');
                         setDeleteItems([]);
                         setSelectedRows([]);
                     } catch (error) {
-                        toast.error('Có lỗi xảy ra khi xóa');
+                        const msg = error instanceof Error ? error.message : 'An error occurred during deactivation';
+                        toast.error(msg);
                     }
                 }}
-                title="Xóa loại công việc"
+                title="Deactivate Task Type"
                 message={deleteItems.length > 1
-                    ? `Bạn có chắc chắn muốn xóa ${deleteItems.length} loại công việc đã chọn?`
-                    : `Xóa "${deleteItems[0]?.name}"?`
+                    ? `Are you sure you want to deactivate ${deleteItems.length} selected task types?`
+                    : `Deactivate "${deleteItems[0]?.name}"?`
                 }
                 isLoading={isLoading} />
         </div>

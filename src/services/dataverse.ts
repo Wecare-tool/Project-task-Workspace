@@ -12,7 +12,7 @@ const CONFIG = {
 export const DATAVERSE_TABLES = {
     taskTypes: {
         name: 'crdfd_task_types',
-        columns: ['crdfd_name', 'crdfd_issteptype', 'crdfd_stepstage', 'crdfd_ownertype', 'crdfd_taskdoman', 'crdfd_tasktypename'],
+        columns: ['crdfd_task_typeid', 'crdfd_name', 'crdfd_issteptype', 'crdfd_stepstage', 'crdfd_ownertype', 'crdfd_taskdoman', 'crdfd_tasktypename'],
         idField: 'crdfd_task_typeid',
     },
     taskTypeAttributes: {
@@ -38,7 +38,7 @@ export const DATAVERSE_TABLES = {
     // Mapping tables
     eventTypeTaskTypeMappings: {
         name: 'crdfd_eventtypetasktypemappings',
-        columns: ['crdfd_eventtypetasktypemappingid', 'crdfd_name', '_crdfd_eventtypeid_value', '_crdfd_tasktypeid_value', 'crdfd_isinitialtask'],
+        columns: ['crdfd_eventtypetasktypemappingid', 'crdfd_name', '_crdfd_eventtypeid_value', '_crdfd_tasktypeid_value', '_crdfd_nexttask_value', 'crdfd_isinitialtask', '_crdfd_project_value'],
         idField: 'crdfd_eventtypetasktypemappingid',
     },
     taskTypeActions: {
@@ -51,15 +51,16 @@ export const DATAVERSE_TABLES = {
         columns: ['crdfd_tasktype_attributeid', 'crdfd_name', 'crdfd_taskinstanceuxvisible', '_crdfd_attribute_value', '_crdfd_tasktype_value'],
         idField: 'crdfd_tasktype_attributeid',
     },
-    taskDependencies: {
-        name: 'crdfd_taskdependencies',
-        columns: ['crdfd_taskdependencyid', 'crdfd_name', '_cr1bb_eventtype_value', '_cr1bb_parenttask_value', '_cr1bb_childtask_value', 'crdfd_outcome', 'createdon', 'modifiedon'],
-        idField: 'crdfd_taskdependencyid',
-    },
+
     projects: {
         name: 'crdfd_projects',
         columns: ['crdfd_projectid', 'crdfd_name', 'crdfd_projecttype', 'crdfd_priority', 'crdfd_projectstatus', '_crdfd_process_value', 'crdfd_department', 'crdfd_startdate', 'crdfd_enddate', 'createdon', 'modifiedon'],
         idField: 'crdfd_projectid',
+    },
+    projectTaskTypeMappings: {
+        name: 'crdfd_projecttasktypemappings',
+        columns: ['crdfd_projecttasktypemappingid', 'crdfd_name', '_crdfd_projectid_value', '_crdfd_tasktypeid_value'],
+        idField: 'crdfd_projecttasktypemappingid',
     },
     taskInstances: {
         name: 'crdfd_task_instances',
@@ -139,6 +140,9 @@ export async function dataverseRequest<T>(
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Prefer': 'odata.include-annotations="*"',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
             ...options.headers,
         },
     });
@@ -146,10 +150,39 @@ export async function dataverseRequest<T>(
     if (!response.ok) {
         const errorText = await response.text();
         console.error('Dataverse API error:', errorText);
-        throw new Error(`Dataverse API error: ${response.status} ${response.statusText}`);
+
+        let errorMessage = `Dataverse API error: ${response.status} ${response.statusText}`;
+        try {
+            const errorJson = JSON.parse(errorText);
+            if (errorJson.error && errorJson.error.message) {
+                errorMessage = errorJson.error.message;
+            }
+        } catch (e) {
+            // keep default message
+        }
+
+        throw new Error(errorMessage);
+
+        throw new Error(errorMessage);
     }
 
-    return response.json();
+    // Handle 204 No Content
+    if (response.status === 204) {
+        return {} as T;
+    }
+
+    // Handle empty body
+    const text = await response.text();
+    if (!text) {
+        return {} as T;
+    }
+
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.error('Error parsing JSON:', e);
+        return {} as T;
+    }
 }
 
 /**
@@ -177,12 +210,18 @@ export async function createRecord<T>(
     tableName: string,
     data: Partial<T>
 ): Promise<T> {
-    const response = await dataverseRequest<T>(tableName, {
-        method: 'POST',
-        body: JSON.stringify(data),
-    });
-
-    return response;
+    console.log('[createRecord] Table:', tableName, 'Data:', data);
+    try {
+        const response = await dataverseRequest<T>(tableName, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        console.log('[createRecord] Success:', response);
+        return response;
+    } catch (error) {
+        console.error('[createRecord] Failed:', error);
+        throw error;
+    }
 }
 
 /**
@@ -219,6 +258,7 @@ export async function deactivateRecord(
     tableName: string,
     id: string
 ): Promise<void> {
+    // User requested specifically to only change statecode to 1
     await updateRecord(tableName, id, { statecode: 1 });
 }
 

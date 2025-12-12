@@ -7,7 +7,7 @@ import type {
     EventSourceType,
     EventType,
     EventInstance,
-    TaskDependency,
+
     TaskTypeAttribute,
     TaskTypeEventTypeMapping,
     TaskTypeActionTypeMapping,
@@ -24,7 +24,7 @@ export const actionInstanceStorage = createStorage<ActionInstance>('action_insta
 export const eventSourceTypeStorage = createStorage<EventSourceType>('event_source_types');
 export const eventTypeStorage = createStorage<EventType>('event_types');
 export const eventInstanceStorage = createStorage<EventInstance>('event_instances');
-export const taskDependencyStorage = createStorage<TaskDependency>('task_dependencies');
+
 export const taskTypeAttributeStorage = createStorage<TaskTypeAttribute>('task_type_attributes');
 
 // Mapping storage services

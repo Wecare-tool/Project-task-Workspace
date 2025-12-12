@@ -38,7 +38,7 @@ export function ProjectForm({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={isEditing ? 'Chỉnh sửa dự án' : 'Tạo dự án mới'}
+            title={isEditing ? 'Edit Project' : 'Create New Project'}
             size="lg"
         >
             <FormBuilder<ProjectFormData>
@@ -48,7 +48,7 @@ export function ProjectForm({
                 onSubmit={onSubmit}
                 onCancel={onClose}
                 isLoading={isLoading}
-                submitText={isEditing ? 'Cập nhật' : 'Tạo mới'}
+                submitText={isEditing ? 'Update' : 'Create'}
             />
         </Modal>
     );

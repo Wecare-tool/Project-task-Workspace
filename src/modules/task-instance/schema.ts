@@ -16,27 +16,23 @@ export const taskInstanceSchema = z.object({
 export type TaskInstanceFormData = z.infer<typeof taskInstanceSchema>;
 
 export const taskStatusOptions = [
-    { value: 'not-started', label: 'Chưa bắt đầu' },
-    { value: 'in-progress', label: 'Đang thực hiện' },
-    { value: 'blocked', label: 'Bị chặn' },
-    { value: 'completed', label: 'Hoàn thành' },
+    { value: 'not-started', label: 'Not Started' },
+    { value: 'in-progress', label: 'In Progress' },
+    { value: 'blocked', label: 'Blocked' },
+    { value: 'completed', label: 'Completed' },
 ];
 
 export const taskPriorityOptions = [
-    { value: 'low', label: 'Thấp' },
-    { value: 'medium', label: 'Trung bình' },
-    { value: 'high', label: 'Cao' },
-    { value: 'critical', label: 'Khẩn cấp' },
+    { value: 'low', label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high', label: 'High' },
+    { value: 'critical', label: 'Critical' },
 ];
 
 export const getTaskFormFields = (projectOptions: { value: string; label: string }[], taskTypeOptions: { value: string; label: string }[]): FormField[] => [
-    { name: 'title', label: 'Tiêu đề', type: 'text', placeholder: 'Nhập tiêu đề công việc', required: true },
-    { name: 'projectId', label: 'Dự án', type: 'select', options: projectOptions, required: true, placeholder: 'Chọn dự án' },
-    { name: 'taskTypeId', label: 'Loại công việc', type: 'select', options: taskTypeOptions, required: true, placeholder: 'Chọn loại' },
-    { name: 'status', label: 'Trạng thái', type: 'select', options: taskStatusOptions, required: true },
-    { name: 'priority', label: 'Độ ưu tiên', type: 'select', options: taskPriorityOptions, required: true },
-    { name: 'startDate', label: 'Ngày bắt đầu', type: 'date' },
-    { name: 'dueDate', label: 'Ngày đến hạn', type: 'date' },
-    { name: 'assignee', label: 'Người phụ trách', type: 'text', placeholder: 'Tên người phụ trách' },
-    { name: 'description', label: 'Mô tả', type: 'textarea', placeholder: 'Mô tả chi tiết công việc' },
+    { name: 'title', label: 'Title', type: 'text', placeholder: 'Enter task title', required: true },
+    { name: 'projectId', label: 'Project', type: 'select', options: projectOptions, required: true, placeholder: 'Select project' },
+    { name: 'taskTypeId', label: 'Task Type', type: 'select', options: taskTypeOptions, required: true, placeholder: 'Select type' },
+    { name: 'status', label: 'Status', type: 'select', options: taskStatusOptions, required: true },
+    { name: 'priority', label: 'Priority', type: 'select', options: taskPriorityOptions, required: true },
 ];

@@ -44,7 +44,7 @@ const navGroups: NavGroup[] = [
             { label: 'Event Types', path: '/event-types', icon: <Calendar className="w-5 h-5" /> },
             { label: 'Event Sources', path: '/event-source-types', icon: <Webhook className="w-5 h-5" /> },
             { label: 'Task Attributes', path: '/task-type-attributes', icon: <Layers className="w-5 h-5" /> },
-            { label: 'Task Dependencies', path: '/dependencies', icon: <GitBranch className="w-5 h-5" /> },
+
         ],
     },
     {

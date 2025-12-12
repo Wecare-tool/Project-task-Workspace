@@ -4,6 +4,16 @@ import { Search, Filter, X } from 'lucide-react';
 import { cn } from '@utils/index';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
+export interface CommandBarItem {
+    key: string;
+    label: string;
+    icon?: ReactNode;
+    onClick: () => void;
+    disabled?: boolean;
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost'; // Added ghost for standard look
+    show?: boolean;
+}
+
 export interface CommandBarProps {
     // Search
     onSearch?: (value: string) => void;
@@ -18,11 +28,12 @@ export interface CommandBarProps {
     filterContent?: ReactNode;
 
     // Actions
-    actions?: ReactNode; // Left side buttons (Add New, etc.)
+    items?: CommandBarItem[]; // New structured items prop
+    actions?: ReactNode; // Legacy support
 
     // Selection Actions
     selectedCount?: number;
-    selectionActions?: ReactNode; // Alternative to actions when items are selected
+    selectionActions?: ReactNode; // Legacy support
 
     className?: string;
 }
@@ -36,6 +47,7 @@ export function CommandBar({
     isFilterActive = false,
     hideFilter = false,
     filterContent,
+    items,
     actions,
     selectedCount = 0,
     selectionActions,
@@ -53,21 +65,44 @@ export function CommandBar({
                     searchInputRef.current?.focus();
                 }
             },
-            global: true // Allow focusing even if other inputs are focused? Maybe not. But global=true allows overriding.
-            // Actually Ctrl+K is usually global.
+            global: true
         }
     ]);
 
-    return (
-        <div className={cn("card p-3", className)}>
-            <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-                {/* Left side - Action Buttons */}
-                <div className="flex items-center gap-2">
-                    {hasSelection && selectionActions ? (
-                        selectionActions
-                    ) : (
-                        actions
+    const renderItems = () => {
+        if (items) {
+            return items.filter(item => item.show !== false).map(item => (
+                <Button
+                    key={item.key}
+                    variant={item.variant || 'ghost'} // Default to ghost for ribbon style
+                    size="sm"
+                    onClick={item.onClick}
+                    disabled={item.disabled}
+                    leftIcon={item.icon}
+                    className={cn(
+                        "font-normal text-neutral-700 hover:bg-neutral-100 border-none shadow-none",
+                        item.variant === 'primary' && "text-primary-600 hover:text-primary-700 hover:bg-primary-50",
+                        item.variant === 'danger' && "text-red-600 hover:text-red-700 hover:bg-red-50"
                     )}
+                >
+                    {item.label}
+                </Button>
+            ));
+        }
+
+        // Legacy support
+        if (hasSelection && selectionActions) {
+            return selectionActions;
+        }
+        return actions;
+    };
+
+    return (
+        <div className={cn("bg-white border-b border-neutral-200 sticky top-0 z-10", className)}>
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between px-4 py-2">
+                {/* Left side - Action Buttons */}
+                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                    {renderItems()}
                 </div>
 
                 {/* Right side - Filter & Search */}
@@ -115,8 +150,10 @@ export function CommandBar({
 
             {/* Filter Panel */}
             {isFilterActive && filterContent && (
-                <div className="mt-3 pt-3 border-t border-neutral-100 animate-slide-down">
-                    {filterContent}
+                <div className="px-4 pb-3 border-t border-neutral-100 animate-slide-down">
+                    <div className="pt-3">
+                        {filterContent}
+                    </div>
                 </div>
             )}
         </div>

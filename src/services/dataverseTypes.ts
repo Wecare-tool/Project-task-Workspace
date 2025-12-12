@@ -8,11 +8,13 @@ export interface DataverseTaskType {
     crdfd_stepstage?: number;
     crdfd_ownertype?: number;
     'crdfd_ownertype@OData.Community.Display.V1.FormattedValue'?: string;
-    crdfd_taskdoman?: number;
+    crdfd_taskdoman?: string; // Updated to string based on API error "Expected Edm.String"
     'crdfd_taskdoman@OData.Community.Display.V1.FormattedValue'?: string;
     crdfd_tasktypename?: string;
     createdon?: string;
     modifiedon?: string;
+    statecode?: number;
+    statuscode?: number;
     [key: string]: unknown;
 }
 
@@ -173,6 +175,7 @@ export function mapDataverseTaskInstance(item: DataverseTaskInstance): TaskInsta
 export function mapDataverseEventInstance(item: DataverseEventInstance): EventInstance {
     return {
         id: item.crdfd_eventinstanceid || generateId(),
+        name: item.crdfd_name || '',
         eventTypeId: item._crdfd_eventtype_value || '',
         taskInstanceId: '', // Not directly in table schema provided
         timestamp: item.createdon ? new Date(item.createdon) : new Date(),
@@ -257,8 +260,11 @@ export interface DataverseEventTypeTaskTypeMapping {
     crdfd_eventtypetasktypemappingid?: string;
     crdfd_name: string;
     '_crdfd_eventtypeid_value'?: string;
-    '_crdfd_tasktypeid_value'?: string;
+    '_crdfd_tasktypeid_value'?: string; // Legacy?
+    '_crdfd_nexttask_value'?: string; // New field
     crdfd_isinitialtask?: boolean;
+    '_crdfd_project_value'?: string;
+    [key: string]: unknown;
 }
 
 export interface EventTypeTaskTypeMapping {
@@ -267,6 +273,7 @@ export interface EventTypeTaskTypeMapping {
     eventTypeId: string;
     taskTypeId: string;
     isInitialTask: boolean;
+    projectId?: string;
 }
 
 export function mapEventTypeTaskTypeMapping(item: DataverseEventTypeTaskTypeMapping): EventTypeTaskTypeMapping {
@@ -274,8 +281,10 @@ export function mapEventTypeTaskTypeMapping(item: DataverseEventTypeTaskTypeMapp
         id: item.crdfd_eventtypetasktypemappingid || generateId(),
         name: item.crdfd_name || '',
         eventTypeId: item['_crdfd_eventtypeid_value'] || '',
-        taskTypeId: item['_crdfd_tasktypeid_value'] || '',
+        // Prioritize nexttask if available (new schema), otherwise tasktypeid (legacy)
+        taskTypeId: item['_crdfd_nexttask_value'] || item['_crdfd_tasktypeid_value'] || '',
         isInitialTask: item.crdfd_isinitialtask ?? false,
+        projectId: item['_crdfd_project_value'],
     };
 }
 
@@ -288,6 +297,7 @@ export interface DataverseTaskTypeAction {
     crdfd_stt?: number;
     crdfd_incharge?: string;
     crdfd_duration?: number;
+    [key: string]: unknown;
 }
 
 export interface TaskTypeAction {
@@ -319,6 +329,7 @@ export interface DataverseTaskTypeAttributeMapping {
     crdfd_taskinstanceuxvisible?: boolean;
     '_crdfd_attribute_value'?: string;
     '_crdfd_tasktype_value'?: string;
+    [key: string]: unknown;
 }
 
 export interface TaskTypeAttributeMapping {
@@ -338,7 +349,6 @@ export function mapTaskTypeAttributeMapping(item: DataverseTaskTypeAttributeMapp
         isVisible: item.crdfd_taskinstanceuxvisible ?? true,
     };
 }
-
 // Task Dependency from Dataverse
 export interface DataverseTaskDependency {
     crdfd_taskdependencyid?: string;
@@ -359,6 +369,7 @@ export interface TaskDependencyNew {
     parentTaskId: string;
     childTaskId: string;
     outcome?: string;
+    outcomeCode?: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -371,6 +382,7 @@ export function mapDataverseTaskDependency(item: DataverseTaskDependency): TaskD
         parentTaskId: item['_cr1bb_parenttask_value'] || '',
         childTaskId: item['_cr1bb_childtask_value'] || '',
         outcome: item['crdfd_outcome@OData.Community.Display.V1.FormattedValue'] || '',
+        outcomeCode: item.crdfd_outcome,
         createdAt: item.createdon ? new Date(item.createdon) : new Date(),
         updatedAt: item.modifiedon ? new Date(item.modifiedon) : new Date(),
     };
@@ -422,5 +434,30 @@ export function mapDataverseProject(item: DataverseProject): ProjectNew {
         endDate: item.crdfd_enddate ? new Date(item.crdfd_enddate) : undefined,
         createdAt: item.createdon ? new Date(item.createdon) : new Date(),
         updatedAt: item.modifiedon ? new Date(item.modifiedon) : new Date(),
+    };
+}
+
+// Project - Task Type Mapping
+export interface DataverseProjectTaskTypeMapping {
+    crdfd_projecttasktypemappingid?: string;
+    crdfd_name: string;
+    '_crdfd_projectid_value'?: string;
+    '_crdfd_tasktypeid_value'?: string;
+    [key: string]: unknown;
+}
+
+export interface ProjectTaskTypeMapping {
+    id: string;
+    name: string;
+    projectId: string;
+    taskTypeId: string;
+}
+
+export function mapProjectTaskTypeMapping(item: DataverseProjectTaskTypeMapping): ProjectTaskTypeMapping {
+    return {
+        id: item.crdfd_projecttasktypemappingid || generateId(),
+        name: item.crdfd_name || '',
+        projectId: item['_crdfd_projectid_value'] || '',
+        taskTypeId: item['_crdfd_tasktypeid_value'] || '',
     };
 }

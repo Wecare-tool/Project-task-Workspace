@@ -13,7 +13,7 @@ interface ProjectListProps {
 const columns: TableColumn<Project>[] = [
     {
         key: 'code',
-        label: 'Mã',
+        label: 'Code',
         sortable: true,
         width: '100px',
         render: (value) => (
@@ -24,7 +24,7 @@ const columns: TableColumn<Project>[] = [
     },
     {
         key: 'name',
-        label: 'Tên dự án',
+        label: 'Project Name',
         sortable: true,
         render: (value, row) => (
             <div>
@@ -37,21 +37,21 @@ const columns: TableColumn<Project>[] = [
     },
     {
         key: 'status',
-        label: 'Trạng thái',
+        label: 'Status',
         sortable: true,
         width: '150px',
         render: (value) => <StatusBadge status={value as string} />,
     },
     {
         key: 'startDate',
-        label: 'Ngày bắt đầu',
+        label: 'Start Date',
         sortable: true,
         width: '120px',
         render: (value) => formatDate(value as Date),
     },
     {
         key: 'endDate',
-        label: 'Ngày kết thúc',
+        label: 'End Date',
         sortable: true,
         width: '120px',
         render: (value) => value ? formatDate(value as Date) : '-',
@@ -74,11 +74,11 @@ export function ProjectList({
             onEdit={onEdit}
             onDelete={onDelete}
             searchable
-            searchPlaceholder="Tìm kiếm dự án..."
+            searchPlaceholder="Search projects..."
             pagination
             pageSize={10}
             isLoading={isLoading}
-            emptyMessage="Chưa có dự án nào. Hãy tạo dự án đầu tiên!"
+            emptyMessage="No projects found. Create your first project!"
         />
     );
 }

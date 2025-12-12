@@ -26,7 +26,8 @@ export function FormBuilder<T extends FieldValues>({
     cancelText = 'Hủy',
     isLoading = false,
     className = '',
-}: FormBuilderProps<T>) {
+    readOnly = false,
+}: FormBuilderProps<T> & { readOnly?: boolean }) {
     const {
         control,
         handleSubmit,
@@ -43,6 +44,7 @@ export function FormBuilder<T extends FieldValues>({
 
     const renderField = (field: FormField) => {
         const error = getErrorMessage(field.name);
+        const disabled = field.disabled || isLoading || readOnly;
 
         return (
             <Controller
@@ -58,7 +60,7 @@ export function FormBuilder<T extends FieldValues>({
                                     label={field.label}
                                     placeholder={field.placeholder}
                                     required={field.required}
-                                    disabled={field.disabled || isLoading}
+                                    disabled={disabled}
                                     error={error}
                                     helperText={field.helperText}
                                     value={controllerField.value || ''}
@@ -72,7 +74,7 @@ export function FormBuilder<T extends FieldValues>({
                                     label={field.label}
                                     placeholder={field.placeholder}
                                     required={field.required}
-                                    disabled={field.disabled || isLoading}
+                                    disabled={disabled}
                                     options={field.options || []}
                                     error={error}
                                     helperText={field.helperText}
@@ -85,7 +87,7 @@ export function FormBuilder<T extends FieldValues>({
                                 <Checkbox
                                     {...controllerField}
                                     label={field.label}
-                                    disabled={field.disabled || isLoading}
+                                    disabled={disabled}
                                     error={error}
                                     checked={controllerField.value || false}
                                     onChange={(e) => controllerField.onChange(e.target.checked)}
@@ -99,7 +101,7 @@ export function FormBuilder<T extends FieldValues>({
                                     type="date"
                                     label={field.label}
                                     required={field.required}
-                                    disabled={field.disabled || isLoading}
+                                    disabled={disabled}
                                     error={error}
                                     helperText={field.helperText}
                                     value={controllerField.value ?
@@ -120,7 +122,7 @@ export function FormBuilder<T extends FieldValues>({
                                     type="datetime-local"
                                     label={field.label}
                                     required={field.required}
-                                    disabled={field.disabled || isLoading}
+                                    disabled={disabled}
                                     error={error}
                                     helperText={field.helperText}
                                     value={controllerField.value || ''}
@@ -135,7 +137,7 @@ export function FormBuilder<T extends FieldValues>({
                                     label={field.label}
                                     placeholder={field.placeholder}
                                     required={field.required}
-                                    disabled={field.disabled || isLoading}
+                                    disabled={disabled}
                                     min={field.min}
                                     max={field.max}
                                     error={error}
@@ -162,12 +164,12 @@ export function FormBuilder<T extends FieldValues>({
                                             type="color"
                                             {...controllerField}
                                             className="w-12 h-10 rounded-lg border border-dark-200 cursor-pointer"
-                                            disabled={field.disabled || isLoading}
+                                            disabled={disabled}
                                         />
                                         <Input
                                             value={controllerField.value || '#000000'}
                                             onChange={(e) => controllerField.onChange(e.target.value)}
-                                            disabled={field.disabled || isLoading}
+                                            disabled={disabled}
                                             className="flex-1"
                                         />
                                     </div>
@@ -183,7 +185,7 @@ export function FormBuilder<T extends FieldValues>({
                                     label={field.label}
                                     placeholder={field.placeholder}
                                     required={field.required}
-                                    disabled={field.disabled || isLoading}
+                                    disabled={disabled}
                                     minLength={field.minLength}
                                     maxLength={field.maxLength}
                                     pattern={field.pattern}
@@ -217,9 +219,11 @@ export function FormBuilder<T extends FieldValues>({
                         {cancelText}
                     </Button>
                 )}
-                <Button type="submit" isLoading={isLoading}>
-                    {submitText}
-                </Button>
+                {!readOnly && (
+                    <Button type="submit" isLoading={isLoading}>
+                        {submitText}
+                    </Button>
+                )}
             </div>
         </form>
     );

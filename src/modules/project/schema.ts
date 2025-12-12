@@ -3,11 +3,11 @@ import type { FormField, SelectOption } from '@/types';
 
 // Validation schema
 export const projectSchema = z.object({
-    name: z.string().min(1, 'Tên dự án là bắt buộc').max(100, 'Tên dự án tối đa 100 ký tự'),
-    code: z.string().min(1, 'Mã dự án là bắt buộc').max(20, 'Mã dự án tối đa 20 ký tự'),
-    description: z.string().max(500, 'Mô tả tối đa 500 ký tự').optional(),
+    name: z.string().min(1, 'Project name is required').max(100, 'Project name max 100 characters'),
+    code: z.string().min(1, 'Project code is required').max(20, 'Project code max 20 characters'),
+    description: z.string().max(500, 'Description max 500 characters').optional(),
     status: z.enum(['active', 'archived', 'on-hold']),
-    startDate: z.date({ required_error: 'Ngày bắt đầu là bắt buộc' }),
+    startDate: z.date({ required_error: 'Start date is required' }),
     endDate: z.date().optional().nullable(),
 });
 
@@ -15,50 +15,50 @@ export type ProjectFormData = z.infer<typeof projectSchema>;
 
 // Status options
 export const projectStatusOptions: SelectOption[] = [
-    { value: 'active', label: 'Đang hoạt động' },
-    { value: 'on-hold', label: 'Tạm dừng' },
-    { value: 'archived', label: 'Đã lưu trữ' },
+    { value: 'active', label: 'Active' },
+    { value: 'on-hold', label: 'On Hold' },
+    { value: 'archived', label: 'Archived' },
 ];
 
 // Form fields
 export const projectFormFields: FormField[] = [
     {
         name: 'name',
-        label: 'Tên dự án',
+        label: 'Project Name',
         type: 'text',
-        placeholder: 'Nhập tên dự án',
+        placeholder: 'Enter project name',
         required: true,
     },
     {
         name: 'code',
-        label: 'Mã dự án',
+        label: 'Project Code',
         type: 'text',
-        placeholder: 'VD: PRJ-001',
+        placeholder: 'Ex: PRJ-001',
         required: true,
-        helperText: 'Mã ngắn gọn để nhận diện dự án',
+        helperText: 'Short code to identify the project',
     },
     {
         name: 'description',
-        label: 'Mô tả',
+        label: 'Description',
         type: 'textarea',
-        placeholder: 'Mô tả chi tiết về dự án',
+        placeholder: 'Detailed project description',
     },
     {
         name: 'status',
-        label: 'Trạng thái',
+        label: 'Status',
         type: 'select',
         options: projectStatusOptions,
         required: true,
     },
     {
         name: 'startDate',
-        label: 'Ngày bắt đầu',
+        label: 'Start Date',
         type: 'date',
         required: true,
     },
     {
         name: 'endDate',
-        label: 'Ngày kết thúc',
+        label: 'End Date',
         type: 'date',
     },
 ];

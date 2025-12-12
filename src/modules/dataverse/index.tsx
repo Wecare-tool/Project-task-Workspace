@@ -10,7 +10,7 @@ export function DataversePage() {
         eventTypes,
         actionTypeNews,
         eventSourceTypes,
-        taskDependencies,
+
         isLoading,
         isInitialized,
         error,
@@ -20,7 +20,7 @@ export function DataversePage() {
         refreshEventTypes,
         refreshActionTypeNews,
         refreshEventSourceTypes,
-        refreshTaskDependencies,
+
     } = useDataverse();
 
     useEffect(() => {
@@ -299,53 +299,7 @@ export function DataversePage() {
                 </div>
             </div>
 
-            {/* Task Dependencies */}
-            <div className="card">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-dark-900">
-                        Task Dependencies
-                        <span className="ml-2 text-sm font-normal text-dark-400">
-                            ({taskDependencies.length} records)
-                        </span>
-                    </h3>
-                    <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={refreshTaskDependencies}
-                        leftIcon={<RefreshCw className="w-4 h-4" />}
-                    >
-                        Refresh
-                    </Button>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="table w-full">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Event Type</th>
-                                <th>Parent Task</th>
-                                <th>Child Task</th>
-                                <th>Outcome</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {taskDependencies.length === 0 ? (
-                                <tr><td colSpan={5} className="text-center py-8 text-dark-400">No data loaded</td></tr>
-                            ) : (
-                                taskDependencies.map((item: any) => (
-                                    <tr key={item.id}>
-                                        <td className="font-medium">{item.name || '-'}</td>
-                                        <td>{item.eventTypeId || '-'}</td>
-                                        <td>{item.parentTaskId || '-'}</td>
-                                        <td>{item.childTaskId || '-'}</td>
-                                        <td>{item.outcome || '-'}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+
         </div>
     );
 }

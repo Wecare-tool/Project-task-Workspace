@@ -13,6 +13,7 @@ interface ModalProps {
     closeOnOverlay?: boolean;
     closeOnEscape?: boolean;
     showCloseButton?: boolean;
+    className?: string;
 }
 
 const sizeClasses = {
@@ -33,6 +34,7 @@ export function Modal({
     closeOnOverlay = true,
     closeOnEscape = true,
     showCloseButton = true,
+    className,
 }: ModalProps) {
     // Handle escape key
     const handleEscape = useCallback(
@@ -71,7 +73,8 @@ export function Modal({
                 className={cn(
                     'relative w-full bg-white rounded-2xl shadow-elevated animate-scale-in',
                     'flex flex-col max-h-[90vh]',
-                    sizeClasses[size]
+                    sizeClasses[size],
+                    className
                 )}
             >
                 {/* Header */}

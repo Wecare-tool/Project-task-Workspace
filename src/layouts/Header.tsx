@@ -1,6 +1,8 @@
 import { useLocation } from 'react-router-dom';
 import { useAppStore } from '@stores/index';
+
 import { Search, Menu, Bell, User } from 'lucide-react';
+
 
 const pathTitles: Record<string, string> = {
     '/': 'Dashboard',
@@ -10,14 +12,14 @@ const pathTitles: Record<string, string> = {
     '/action-instances': 'Actions',
     '/event-instances': 'Events',
     '/settings': 'Settings',
-    '/task-types': 'Task Types (crdfd_task_types)',
-    '/action-types': 'Action Types (crdfd_actiontypenews)',
-    '/event-types': 'Event Types (central_eventtypes)',
-    '/event-source-types': 'Event Source Types (crdfd_event_source_types)',
-    '/task-type-attributes': 'Task Type Attributes (crdfd_tasktypeattributes)',
-    '/event-task-mapping': 'Task Type → Event Type (crdfd_eventtypetasktypemappings)',
-    '/task-action-mapping': 'Task Type → Action (crdfd_tasktypexactions)',
-    '/task-attribute-mapping': 'Task Type → Attribute (crdfd_tasktype_attributes)',
+    '/task-types': 'Task Types',
+    '/action-types': 'Action Types',
+    '/event-types': 'Event Types',
+    '/event-source-types': 'Event Source Types',
+    '/task-type-attributes': 'Task Type Attributes',
+    '/event-task-mapping': 'Task Type → Event Type',
+    '/task-action-mapping': 'Task Type → Action',
+    '/task-attribute-mapping': 'Task Type → Attribute',
 };
 
 export function Header() {
@@ -42,22 +44,12 @@ export function Header() {
                     </button>
 
                     {/* Page title */}
-                    {/* Page title */}
                     {currentTitle && (
-                        <div className="flex flex-col">
-                            <h1 className="text-xl font-semibold text-dark-900 hidden sm:block">
-                                {currentTitle.split(' (')[0]}
-                            </h1>
-                            {currentTitle.includes('(') && (
-                                <p className="text-xs text-dark-500 hidden sm:block">
-                                    {currentTitle.split(' (')[1].replace(')', '')}
-                                </p>
-                            )}
-                        </div>
+                        <h1 className="text-xl font-semibold text-dark-900 hidden sm:block">
+                            {currentTitle}
+                        </h1>
                     )}
                 </div>
-
-                {/* Right side */}
 
                 {/* Right side */}
                 <div className="flex items-center gap-2">
