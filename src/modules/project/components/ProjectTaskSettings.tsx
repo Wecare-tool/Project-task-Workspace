@@ -56,30 +56,33 @@ export function ProjectTaskSettings({ projectId }: Props) {
         [taskTypes, selectedTaskTypeId]
     );
 
-    // Available Task Types (NOT in project)
-    const availableTaskTypes = useMemo(() =>
+    // All Task Types with added status
+    const allTaskTypesWithStatus = useMemo(() =>
         taskTypes
-            .filter(t => !currentMappings.some(m => m.taskTypeId === t.id))
+            .map(t => ({
+                ...t,
+                isAdded: currentMappings.some(m => m.taskTypeId === t.id)
+            }))
             .sort((a, b) => a.name.localeCompare(b.name)),
         [taskTypes, currentMappings]
     );
 
-    // Filtered Available Task Types (for Modal)
-    const filteredAvailableTaskTypes = useMemo(() =>
-        availableTaskTypes.filter(t =>
+    // Filtered Task Types (for Modal) - shows all, including already added
+    const filteredTaskTypes = useMemo(() =>
+        allTaskTypesWithStatus.filter(t =>
             t.name.toLowerCase().includes(availableSearchTerm.toLowerCase()) ||
             (t.description || '').toLowerCase().includes(availableSearchTerm.toLowerCase())
         ),
-        [availableTaskTypes, availableSearchTerm]
+        [allTaskTypesWithStatus, availableSearchTerm]
     );
 
-    // Filtered Quick Add Options
+    // Filtered Quick Add Options (only show available, not added)
     const quickAddOptions = useMemo(() => {
         if (!quickAddSearch) return [];
-        return availableTaskTypes.filter(t =>
-            t.name.toLowerCase().includes(quickAddSearch.toLowerCase())
-        ).slice(0, 5); // Limit to 5 results
-    }, [availableTaskTypes, quickAddSearch]);
+        return allTaskTypesWithStatus
+            .filter(t => !t.isAdded && t.name.toLowerCase().includes(quickAddSearch.toLowerCase()))
+            .slice(0, 5); // Limit to 5 results
+    }, [allTaskTypesWithStatus, quickAddSearch]);
 
     // Attribute Settings Logic - Unchanged
     const handleAttributeSelectionChange = async (selectedIds: string[]) => {
@@ -135,9 +138,10 @@ export function ProjectTaskSettings({ projectId }: Props) {
                 'crdfd_Nexttask@odata.bind': `/crdfd_task_types(${taskTypeId})`
                 // EventType is intentionally left blank for Project-specific mappings
             });
-            setIsAddModalOpen(false);
+            // Keep modal open to add more tasks
             setQuickAddSearch(''); // Clear quick add
             setIsQuickAddOpen(false);
+            toast.success('Task type added successfully');
         } catch (error) {
             toast.error('Failed to add task type');
         }
@@ -158,6 +162,21 @@ export function ProjectTaskSettings({ projectId }: Props) {
             toast.success('Task Type created. Please select it to add to project.');
         } catch (error) {
             toast.error('Failed to create task type');
+        }
+    };
+
+    const handleRemoveTaskTypeFromModal = async (taskTypeId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm('Remove this task type from the project?')) return;
+
+        try {
+            const mapping = currentMappings.find(m => m.taskTypeId === taskTypeId);
+            if (mapping) {
+                await deactivateEventTypeTaskTypeMapping(mapping.id);
+                toast.success('Task type removed successfully');
+            }
+        } catch (error) {
+            toast.error('Failed to remove task type');
         }
     };
 
@@ -233,7 +252,7 @@ export function ProjectTaskSettings({ projectId }: Props) {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-red-500"
+                                className="h-6 w-6 p-0 text-neutral-400 hover:text-red-500 hover:bg-red-50"
                                 onClick={(e) => handleRemoveTaskType(taskType.id, e)}
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -303,7 +322,7 @@ export function ProjectTaskSettings({ projectId }: Props) {
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 title="Add Task Type to Project"
-                className="w-[40%] h-[85%] max-w-none"
+                className="w-[70%] h-[85%] max-w-none"
             >
                 <div className="flex flex-col h-full space-y-4">
                     <div className="flex justify-between items-center gap-4">
@@ -322,7 +341,7 @@ export function ProjectTaskSettings({ projectId }: Props) {
                     </div>
 
                     <div className="flex-1 overflow-y-auto border rounded-md divide-y">
-                        {filteredAvailableTaskTypes.length === 0 ? (
+                        {filteredTaskTypes.length === 0 ? (
                             <div className="p-8 text-center text-neutral-500">
                                 <p className="mb-2">No matching task types found.</p>
                                 <Button variant="ghost" onClick={() => { setIsAddModalOpen(false); setIsCreateModalOpen(true); }}>
@@ -330,13 +349,31 @@ export function ProjectTaskSettings({ projectId }: Props) {
                                 </Button>
                             </div>
                         ) : (
-                            filteredAvailableTaskTypes.map(t => (
-                                <div key={t.id} className="p-3 flex justify-between items-center hover:bg-neutral-50 transition-colors">
+                            filteredTaskTypes.map(t => (
+                                <div key={t.id} className={`p-3 flex justify-between items-center transition-colors ${t.isAdded ? 'bg-neutral-50 opacity-70' : 'hover:bg-neutral-50'
+                                    }`}>
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-neutral-900">{t.name}</span>
+                                        <span className={`text-sm font-medium ${t.isAdded ? 'text-neutral-500' : 'text-neutral-900'
+                                            }`}>{t.name}</span>
                                         <span className="text-xs text-neutral-500">{t.description || 'No description'}</span>
                                     </div>
-                                    <Button size="sm" variant="secondary" onClick={() => handleAddTaskType(t.id)}>Add</Button>
+                                    {t.isAdded ? (
+                                        <div className="flex items-center gap-2">
+                                            <Button size="sm" variant="ghost" disabled className="text-green-600 cursor-not-allowed">
+                                                Added
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 w-8 p-0 text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                                                onClick={(e) => handleRemoveTaskTypeFromModal(t.id, e)}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button size="sm" variant="secondary" onClick={() => handleAddTaskType(t.id)}>Add</Button>
+                                    )}
                                 </div>
                             ))
                         )}

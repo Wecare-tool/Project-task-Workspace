@@ -38,7 +38,7 @@ export const DATAVERSE_TABLES = {
     // Mapping tables
     eventTypeTaskTypeMappings: {
         name: 'crdfd_eventtypetasktypemappings',
-        columns: ['crdfd_eventtypetasktypemappingid', 'crdfd_name', '_crdfd_eventtypeid_value', '_crdfd_tasktypeid_value', '_crdfd_nexttask_value', 'crdfd_isinitialtask', '_crdfd_project_value'],
+        columns: ['crdfd_eventtypetasktypemappingid', 'crdfd_name', '_crdfd_nexttask_value', 'crdfd_isinitialtask', '_crdfd_project_value'],
         idField: 'crdfd_eventtypetasktypemappingid',
     },
     taskTypeActions: {
