@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useDataverse } from '@stores/dataverseStore';
 import { Button, Tabs, TabsList, TabsTrigger, TabsContent, Input } from '@components/ui';
-import { Plus, Search, Trash2, Settings } from 'lucide-react';
+import { Plus, Search, Trash2, Settings, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { TaskTypeAttributeSettings } from '@modules/task-type/TaskTypeAttributeSettings';
 import { TaskActionFlow } from './TaskActionFlow';
@@ -246,17 +246,22 @@ export function ProjectTaskSettings({ projectId }: Props) {
                                     : 'border-transparent hover:bg-neutral-100/80'}
                             `}
                         >
-                            <span className={`font-medium text-sm ${selectedTaskTypeId === taskType.id ? 'text-primary-700' : 'text-neutral-700'}`}>
-                                {taskType.name}
-                            </span>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                            <div className="flex items-center gap-3">
+                                <div className="p-1.5 bg-primary-50 rounded-md text-primary-600">
+                                    <FileText className="w-4 h-4" />
+                                </div>
+                                <span className={`font-medium text-sm ${selectedTaskTypeId === taskType.id ? 'text-primary-700' : 'text-neutral-700'}`}>
+                                    {taskType.name}
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                className="h-6 w-6 p-0.5 flex items-center justify-center rounded-md text-red-500 hover:bg-red-50 transition-colors"
                                 onClick={(e) => handleRemoveTaskType(taskType.id, e)}
+                                title="Remove task type"
                             >
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                                <Trash2 className="w-4 h-4" />
+                            </button>
                         </div>
                     ))}
                     {projectTaskTypes.length === 0 && (
@@ -362,14 +367,14 @@ export function ProjectTaskSettings({ projectId }: Props) {
                                             <Button size="sm" variant="ghost" disabled className="text-green-600 cursor-not-allowed">
                                                 Added
                                             </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="h-8 w-8 p-0 text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                                            <button
+                                                type="button"
+                                                className="h-8 w-8 p-1 flex items-center justify-center rounded-md text-red-500 hover:bg-red-50 transition-colors"
                                                 onClick={(e) => handleRemoveTaskTypeFromModal(t.id, e)}
+                                                title="Remove task type"
                                             >
                                                 <Trash2 className="w-4 h-4" />
-                                            </Button>
+                                            </button>
                                         </div>
                                     ) : (
                                         <Button size="sm" variant="secondary" onClick={() => handleAddTaskType(t.id)}>Add</Button>
