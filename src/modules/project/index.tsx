@@ -208,6 +208,7 @@ export function ProjectPage() {
                 title={selected ? 'Edit Project' : 'New Project'}
                 size={selected ? 'full' : 'lg'}
                 className={selected ? "!w-[95%] !h-[95%] max-w-none" : "!max-w-[85vw]"}
+                hideHeader={!!selected}
             >
                 <Tabs defaultValue="general" className="w-full h-full flex flex-col">
                     <div className="border-b px-1">

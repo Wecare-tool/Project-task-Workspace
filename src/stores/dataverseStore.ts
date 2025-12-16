@@ -127,6 +127,10 @@ interface DataverseState {
     createActionTypeNew: (data: Partial<DataverseActionTypeNew>) => Promise<void>;
     updateActionTypeNew: (id: string, data: Partial<DataverseActionTypeNew>) => Promise<void>;
     deactivateActionTypeNew: (id: string) => Promise<void>;
+    batchUpdateTaskTypeAttributeMappings: (
+        updates: { id: string; data: Partial<DataverseTaskTypeAttributeMapping> }[],
+        creates: Partial<DataverseTaskTypeAttributeMapping>[]
+    ) => Promise<void>;
 }
 
 export const useDataverseStore = create<DataverseState>((set: any, get: any) => ({
@@ -663,6 +667,26 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
             toast.success('Success', 'Attribute Mapping deactivated');
         } catch (error) {
             toast.error('Error', 'Failed to deactivate Attribute Mapping');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    batchUpdateTaskTypeAttributeMappings: async (updates, creates) => {
+        set({ isLoading: true });
+        try {
+            const promises = [
+                ...updates.map(u => updateRecord(DATAVERSE_TABLES.taskTypeAttributeMappings.name, u.id, u.data)),
+                ...creates.map(c => createRecord(DATAVERSE_TABLES.taskTypeAttributeMappings.name, c))
+            ];
+
+            await Promise.all(promises);
+            await get().refreshTaskTypeAttributeMappings();
+            toast.success('Success', 'Attributes updated successfully');
+        } catch (error) {
+            console.error('Batch update failed:', error);
+            toast.error('Error', 'Failed to update attributes');
             throw error;
         } finally {
             set({ isLoading: false });

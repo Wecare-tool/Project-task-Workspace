@@ -21,9 +21,7 @@ export function ProjectTaskSettings({ projectId }: Props) {
         createEventTypeTaskTypeMapping,
         deactivateEventTypeTaskTypeMapping,
         createTaskType,
-        createTaskTypeAttributeMapping,
-        updateTaskTypeAttributeMapping,
-        refreshTaskTypeAttributeMappings,
+        batchUpdateTaskTypeAttributeMappings,
         isLoading
     } = useDataverse();
 
@@ -84,50 +82,84 @@ export function ProjectTaskSettings({ projectId }: Props) {
             .slice(0, 5); // Limit to 5 results
     }, [allTaskTypesWithStatus, quickAddSearch]);
 
-    // Attribute Settings Logic - Unchanged
-    const handleAttributeSelectionChange = async (selectedIds: string[]) => {
-        if (!selectedTaskTypeId) return;
-
-        try {
-            const currentAttrMappings = taskTypeAttributeMappings.filter(m => m.taskTypeId === selectedTaskTypeId);
-
-            for (const attr of taskTypeAttributes) {
-                const isSelected = selectedIds.includes(attr.id);
-                const mapping = currentAttrMappings.find(m => m.attributeId === attr.id);
-
-                if (isSelected) {
-                    if (mapping) {
-                        if (!mapping.isVisible) {
-                            await updateTaskTypeAttributeMapping(mapping.id, { crdfd_taskinstanceuxvisible: true });
-                        }
-                    } else {
-                        await createTaskTypeAttributeMapping({
-                            crdfd_name: `${selectedTaskType?.name}-${attr.name}`,
-                            'crdfd_TaskType@odata.bind': `/crdfd_task_types(${selectedTaskTypeId})`,
-                            'crdfd_Attribute@odata.bind': `/crdfd_attributes(${attr.id})`,
-                            crdfd_taskinstanceuxvisible: true
-                        });
-                    }
-                } else {
-                    if (mapping && mapping.isVisible) {
-                        await updateTaskTypeAttributeMapping(mapping.id, { crdfd_taskinstanceuxvisible: false });
-                    }
-                }
-            }
-            await refreshTaskTypeAttributeMappings();
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to update attribute settings');
-        }
-    };
+    const [optimisticSelectedIds, setOptimisticSelectedIds] = useState<string[] | null>(null);
 
     // Derived selected attribute IDs for the component
+    // If we have an optimistic state, use it. Otherwise fall back to store data.
     const selectedAttributeIds = useMemo(() => {
+        if (optimisticSelectedIds !== null) return optimisticSelectedIds;
+
         if (!selectedTaskTypeId) return [];
         return taskTypeAttributeMappings
             .filter(m => m.taskTypeId === selectedTaskTypeId && m.isVisible)
             .map(m => m.attributeId);
-    }, [selectedTaskTypeId, taskTypeAttributeMappings]);
+    }, [selectedTaskTypeId, taskTypeAttributeMappings, optimisticSelectedIds]);
+
+    // Reset optimistic state when switching task types
+    useMemo(() => {
+        setOptimisticSelectedIds(null);
+    }, [selectedTaskTypeId]);
+
+
+    // Attribute Settings Logic - Optimized
+    const handleAttributeSelectionChange = async (newSelectedIds: string[]) => {
+        if (!selectedTaskTypeId) return;
+
+        // 1. Optimistic Update
+        setOptimisticSelectedIds(newSelectedIds);
+
+        try {
+            const currentAttrMappings = taskTypeAttributeMappings.filter(m => m.taskTypeId === selectedTaskTypeId);
+
+            const updates: { id: string; data: Partial<any> }[] = [];
+            const creates: Partial<any>[] = [];
+
+            // Identify changes needed
+            // A. Check for attributes that need to be made VISIBLE (in newSelectedIds)
+            for (const attrId of newSelectedIds) {
+                const mapping = currentAttrMappings.find(m => m.attributeId === attrId);
+                if (mapping) {
+                    // Already mapped, check if hidden
+                    if (!mapping.isVisible) {
+                        updates.push({ id: mapping.id, data: { crdfd_taskinstanceuxvisible: true } });
+                    }
+                } else {
+                    // Not mapped, need to create
+                    const attr = taskTypeAttributes.find(a => a.id === attrId);
+                    if (attr) {
+                        creates.push({
+                            crdfd_name: `${selectedTaskType?.name}-${attr.name}`,
+                            'crdfd_Tasktype@odata.bind': `/crdfd_task_types(${selectedTaskTypeId})`,
+                            'crdfd_Attribute@odata.bind': `/crdfd_tasktypeattributes(${attr.id})`,
+                            crdfd_taskinstanceuxvisible: true
+                        });
+                    }
+                }
+            }
+
+            // B. Check for attributes that need to be HIDDEN (not in newSelectedIds)
+            // We only care about existing visible mappings that are NOT in the new list
+            for (const mapping of currentAttrMappings) {
+                if (mapping.isVisible && !newSelectedIds.includes(mapping.attributeId)) {
+                    updates.push({ id: mapping.id, data: { crdfd_taskinstanceuxvisible: false } });
+                }
+            }
+
+            // 2. Perform Batch Update
+            if (updates.length > 0 || creates.length > 0) {
+                await batchUpdateTaskTypeAttributeMappings(updates, creates);
+            }
+
+            // 3. Clear optimistic state (store data should now match)
+            setOptimisticSelectedIds(null);
+
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update attribute settings');
+            // Revert optimistic update on error
+            setOptimisticSelectedIds(null);
+        }
+    };
 
     // Handlers
     const handleAddTaskType = async (taskTypeId: string) => {

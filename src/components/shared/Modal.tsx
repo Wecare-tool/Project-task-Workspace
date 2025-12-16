@@ -13,7 +13,7 @@ interface ModalProps {
     closeOnOverlay?: boolean;
     closeOnEscape?: boolean;
     showCloseButton?: boolean;
-    className?: string;
+    hideHeader?: boolean;
 }
 
 const sizeClasses = {
@@ -35,6 +35,7 @@ export function Modal({
     closeOnEscape = true,
     showCloseButton = true,
     className,
+    hideHeader = false,
 }: ModalProps) {
     // Handle escape key
     const handleEscape = useCallback(
@@ -78,19 +79,33 @@ export function Modal({
                 )}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-dark-100">
-                    <h2 className="text-lg font-semibold text-dark-900">{title}</h2>
-                    {showCloseButton && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onClose}
-                            className="p-2 -mr-2"
-                        >
-                            <X className="h-5 w-5" />
-                        </Button>
-                    )}
-                </div>
+                {!hideHeader && (
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-dark-100">
+                        <h2 className="text-lg font-semibold text-dark-900">{title}</h2>
+                        {showCloseButton && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={onClose}
+                                className="p-2 -mr-2"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        )}
+                    </div>
+                )}
+
+                {/* Floating Close Button */}
+                {hideHeader && showCloseButton && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onClose}
+                        className="absolute top-2 right-2 p-2 z-10"
+                    >
+                        <X className="h-5 w-5" />
+                    </Button>
+                )}
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto px-6 py-4">

@@ -115,8 +115,8 @@ export function mapDataverseTaskTypeAttribute(item: DataverseTaskTypeAttribute):
     return {
         id: item.crdfd_tasktypeattributeid || generateId(),
         taskTypeId: '', // Will need to be linked separately
-        name: item.crdfd_attribute || item.crdfd_name || '',
-        label: item.crdfd_name || '',
+        name: item.crdfd_name || '',
+        label: item.crdfd_attribute || item.crdfd_name || '',
         dataType: 'string' as const,
         required: false,
         order: 0,
