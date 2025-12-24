@@ -14,6 +14,7 @@ interface ModalProps {
     closeOnEscape?: boolean;
     showCloseButton?: boolean;
     hideHeader?: boolean;
+    className?: string;
 }
 
 const sizeClasses = {

@@ -38,7 +38,7 @@ export const DATAVERSE_TABLES = {
     // Mapping tables
     eventTypeTaskTypeMappings: {
         name: 'crdfd_eventtypetasktypemappings',
-        columns: ['crdfd_eventtypetasktypemappingid', 'crdfd_name', '_crdfd_nexttask_value', 'crdfd_isinitialtask', '_crdfd_project_value'],
+        columns: ['crdfd_eventtypetasktypemappingid', 'crdfd_name', '_crdfd_task_value', '_crdfd_nexttask_value', 'crdfd_outcome', 'crdfd_isinitialtask', '_crdfd_project_value'],
         idField: 'crdfd_eventtypetasktypemappingid',
     },
     taskTypeActions: {
@@ -81,6 +81,11 @@ export const DATAVERSE_TABLES = {
         name: 'crdfd_actioninstances',
         columns: ['crdfd_actioninstanceid', 'crdfd_name', '_crdfd_taskinstance_value', 'crdfd_trangthai', '_crdfd_tasktypexaction_value', 'createdon', 'modifiedon'],
         idField: 'crdfd_actioninstanceid',
+    },
+    taskDependencies: {
+        name: 'crdfd_taskdependencies',
+        columns: ['crdfd_taskdependencyid', 'crdfd_name', '_cr1bb_eventtype_value', '_cr1bb_parenttask_value', '_cr1bb_childtask_value', 'crdfd_outcome'],
+        idField: 'crdfd_taskdependencyid',
     },
 };
 

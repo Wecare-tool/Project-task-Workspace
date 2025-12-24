@@ -5,6 +5,7 @@ import { Modal, ConfirmModal, DataTable, FormBuilder, CommandBar, type CommandBa
 import { Plus } from 'lucide-react';
 import { useProjects } from './hooks';
 import { ProjectTaskSettings } from './components/ProjectTaskSettings';
+import { TaskFlowCanvas } from './components/TaskFlowCanvas';
 import type { TableColumn } from '@/types';
 import { formatDate } from '@utils/index';
 import { exportToCsv } from '@/utils/exportUtils';
@@ -215,6 +216,7 @@ export function ProjectPage() {
                         <TabsList>
                             <TabsTrigger value="general">General Information</TabsTrigger>
                             {selected && <TabsTrigger value="tasks">Task Configuration</TabsTrigger>}
+                            {selected && <TabsTrigger value="taskflow">Task Flow</TabsTrigger>}
                         </TabsList>
                     </div>
 
@@ -232,6 +234,12 @@ export function ProjectPage() {
                     {selected && (
                         <TabsContent value="tasks" className="flex-1 overflow-hidden p-1 pt-4 h-full">
                             <ProjectTaskSettings projectId={selected.id} />
+                        </TabsContent>
+                    )}
+
+                    {selected && (
+                        <TabsContent value="taskflow" className="flex-1 overflow-hidden p-0 h-full">
+                            <TaskFlowCanvas projectId={selected.id} />
                         </TabsContent>
                     )}
                 </Tabs>

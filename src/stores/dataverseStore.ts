@@ -21,6 +21,7 @@ import {
     mapDataverseActionInstance,
     mapDataverseProject,
     mapProjectTaskTypeMapping,
+    mapDataverseTaskDependency,
 } from '@services/dataverseTypes';
 import type {
     DataverseTaskType,
@@ -44,6 +45,8 @@ import type {
     ProjectNew,
     DataverseProjectTaskTypeMapping,
     ProjectTaskTypeMapping,
+    DataverseTaskDependency,
+    TaskDependencyNew,
 } from '@services/dataverseTypes';
 import type { TaskType, TaskTypeAttribute, EventType, TaskInstance, EventInstance, ActionInstance } from '@/types';
 import { toast } from '@stores/index';
@@ -64,6 +67,7 @@ interface DataverseState {
     projectTaskTypeMappings: ProjectTaskTypeMapping[];
     taskTypeActions: TaskTypeAction[];
     taskTypeAttributeMappings: TaskTypeAttributeMapping[];
+    taskDependencies: TaskDependencyNew[];
 
     // State
     isLoading: boolean;
@@ -82,6 +86,7 @@ interface DataverseState {
     refreshEventTypeTaskTypeMappings: () => Promise<void>;
     refreshTaskTypeActions: () => Promise<void>;
     refreshTaskTypeAttributeMappings: () => Promise<void>;
+    refreshTaskDependencies: () => Promise<void>;
 
     refreshProjects: () => Promise<void>;
     refreshProjectTaskTypeMappings: () => Promise<void>;
@@ -127,6 +132,11 @@ interface DataverseState {
     createActionTypeNew: (data: Partial<DataverseActionTypeNew>) => Promise<void>;
     updateActionTypeNew: (id: string, data: Partial<DataverseActionTypeNew>) => Promise<void>;
     deactivateActionTypeNew: (id: string) => Promise<void>;
+    // Task Dependencies
+    createTaskDependency: (data: Partial<DataverseTaskDependency>) => Promise<void>;
+    updateTaskDependency: (id: string, data: Partial<DataverseTaskDependency>) => Promise<void>;
+    deactivateTaskDependency: (id: string) => Promise<void>;
+
     batchUpdateTaskTypeAttributeMappings: (
         updates: { id: string; data: Partial<DataverseTaskTypeAttributeMapping> }[],
         creates: Partial<DataverseTaskTypeAttributeMapping>[]
@@ -145,6 +155,7 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
     eventTypeTaskTypeMappings: [],
     taskTypeActions: [],
     taskTypeAttributeMappings: [],
+    taskDependencies: [],
 
     projects: [],
     projectTaskTypeMappings: [],
@@ -165,13 +176,14 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
                 get().refreshEventTypeTaskTypeMappings(),
                 get().refreshTaskTypeActions(),
                 get().refreshTaskTypeAttributeMappings(),
+                // Note: crdfd_taskdependencies table doesn't exist, using eventTypeTaskTypeMappings for task flow
 
                 // Refresh instances as well
                 get().refreshTaskInstances(),
                 get().refreshEventInstances(),
                 get().refreshActionInstances(),
                 get().refreshProjects(),
-                get().refreshProjectTaskTypeMappings(),
+                // Note: crdfd_projecttasktypemappings table doesn't exist, using eventTypeTaskTypeMappings for project-task mappings
             ]);
 
             // Log failures
@@ -322,6 +334,17 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
             set({ taskTypeAttributeMappings: data.map(mapTaskTypeAttributeMapping) });
         } catch (error) {
             console.error('Error fetching task type attribute mappings:', error);
+            throw error;
+        }
+    },
+
+    refreshTaskDependencies: async () => {
+        try {
+            const config = DATAVERSE_TABLES.taskDependencies;
+            const data = await fetchTableData<DataverseTaskDependency>(config.name, config.columns, 'statecode eq 0');
+            set({ taskDependencies: data.map(mapDataverseTaskDependency) });
+        } catch (error) {
+            console.error('Error fetching task dependencies:', error);
             throw error;
         }
     },
@@ -856,6 +879,49 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
             toast.success('Success', 'Action Type deactivated');
         } catch (error) {
             toast.error('Error', 'Failed to deactivate Action Type');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // Task Dependencies
+    createTaskDependency: async (data: any) => {
+        set({ isLoading: true });
+        try {
+            await createRecord(DATAVERSE_TABLES.taskDependencies.name, data);
+            await get().refreshTaskDependencies();
+            toast.success('Success', 'Dependency created');
+        } catch (error) {
+            toast.error('Error', 'Failed to create dependency');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    updateTaskDependency: async (id: any, data: any) => {
+        set({ isLoading: true });
+        try {
+            await updateRecord(DATAVERSE_TABLES.taskDependencies.name, id, data);
+            await get().refreshTaskDependencies();
+            toast.success('Success', 'Dependency updated');
+        } catch (error) {
+            toast.error('Error', 'Failed to update dependency');
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    deactivateTaskDependency: async (id: any) => {
+        set({ isLoading: true });
+        try {
+            await deactivateRecord(DATAVERSE_TABLES.taskDependencies.name, id);
+            await get().refreshTaskDependencies();
+            toast.success('Success', 'Dependency removed');
+        } catch (error) {
+            toast.error('Error', 'Failed to remove dependency');
             throw error;
         } finally {
             set({ isLoading: false });

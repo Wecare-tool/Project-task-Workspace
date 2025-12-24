@@ -260,8 +260,10 @@ export interface DataverseEventTypeTaskTypeMapping {
     crdfd_eventtypetasktypemappingid?: string;
     crdfd_name: string;
     '_crdfd_eventtypeid_value'?: string;
-    '_crdfd_tasktypeid_value'?: string; // Legacy?
-    '_crdfd_nexttask_value'?: string; // New field
+    '_crdfd_task_value'?: string; // Parent task (Task column)
+    '_crdfd_nexttask_value'?: string; // Child task (Next task column)
+    crdfd_outcome?: number; // Done = 1, Fail = 2
+    'crdfd_outcome@OData.Community.Display.V1.FormattedValue'?: string;
     crdfd_isinitialtask?: boolean;
     '_crdfd_project_value'?: string;
     [key: string]: unknown;
@@ -271,7 +273,10 @@ export interface EventTypeTaskTypeMapping {
     id: string;
     name: string;
     eventTypeId: string;
-    taskTypeId: string;
+    taskTypeId: string; // Parent task (for flow this is the "Task" column)
+    nextTaskId?: string; // Child task (Next task column)
+    outcome?: number; // Done = 1, Fail = 2
+    outcomeLabel?: string;
     isInitialTask: boolean;
     projectId?: string;
 }
@@ -280,9 +285,12 @@ export function mapEventTypeTaskTypeMapping(item: DataverseEventTypeTaskTypeMapp
     return {
         id: item.crdfd_eventtypetasktypemappingid || generateId(),
         name: item.crdfd_name || '',
-        eventTypeId: item['_crdfd_eventtypeid_value'] || '',
-        // Prioritize nexttask if available (new schema), otherwise tasktypeid (legacy)
-        taskTypeId: item['_crdfd_nexttask_value'] || item['_crdfd_tasktypeid_value'] || '',
+        eventTypeId: '', // Event type not fetched for project flows
+        // taskTypeId = Task column (parent task / task in project)
+        taskTypeId: item['_crdfd_task_value'] || '',
+        nextTaskId: item['_crdfd_nexttask_value'],
+        outcome: item.crdfd_outcome,
+        outcomeLabel: item['crdfd_outcome@OData.Community.Display.V1.FormattedValue'],
         isInitialTask: item.crdfd_isinitialtask ?? false,
         projectId: item['_crdfd_project_value'],
     };
@@ -386,6 +394,11 @@ export function mapDataverseTaskDependency(item: DataverseTaskDependency): TaskD
         createdAt: item.createdon ? new Date(item.createdon) : new Date(),
         updatedAt: item.modifiedon ? new Date(item.modifiedon) : new Date(),
     };
+}
+
+export enum DependencyOutcome {
+    Done = 191920000,
+    Fail = 191920001,
 }
 
 // Project from Dataverse
