@@ -97,7 +97,7 @@ export function ProjectTaskFlow({ projectId }: Props) {
     return (
         <div className="h-full flex gap-4 p-2">
             {/* Left Panel: Task List */}
-            <div className="w-1/4 border rounded-lg bg-neutral-50 flex flex-col">
+            <div className="w-[400px] shrink-0 border rounded-lg bg-neutral-50 flex flex-col">
                 <div className="p-3 border-b">
                     <h3 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
                         <GitBranch className="w-4 h-4" />

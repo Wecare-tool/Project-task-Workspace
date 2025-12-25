@@ -2,7 +2,14 @@ import { useCallback } from 'react';
 import { useDataverse } from '@stores/dataverseStore';
 
 export function useProjects() {
-    const { projects, isLoading, refreshProjects } = useDataverse();
+    const {
+        projects,
+        isLoading,
+        refreshProjects,
+        createProject,
+        updateProject,
+        deactivateProject
+    } = useDataverse();
 
     const refresh = refreshProjects;
 
@@ -10,17 +17,17 @@ export function useProjects() {
         return projects.find((p: any) => p.id === id);
     }, [projects]);
 
-    const create = useCallback(async (_data: any) => {
-        console.warn('Create not implemented for Dataverse projects yet');
-    }, []);
+    const create = useCallback(async (data: any) => {
+        await createProject(data);
+    }, [createProject]);
 
-    const update = useCallback(async (_id: string, _data: any) => {
-        console.warn('Update not implemented for Dataverse projects yet');
-    }, []);
+    const update = useCallback(async (id: string, data: any) => {
+        await updateProject(id, data);
+    }, [updateProject]);
 
-    const remove = useCallback(async (_id: string) => {
-        console.warn('Delete not implemented for Dataverse projects yet');
-    }, []);
+    const remove = useCallback(async (id: string) => {
+        await deactivateProject(id);
+    }, [deactivateProject]);
 
     return {
         projects,

@@ -6,11 +6,14 @@ import { Plus } from 'lucide-react';
 import { useProjects } from './hooks';
 import { ProjectTaskSettings } from './components/ProjectTaskSettings';
 import { TaskFlowCanvas } from './components/TaskFlowCanvas';
+import { ProjectOverview } from './components/ProjectOverview';
+import { ProjectInstances } from './components/ProjectInstances';
 import type { TableColumn } from '@/types';
 import { formatDate } from '@utils/index';
 import { exportToCsv } from '@/utils/exportUtils';
 import { useToast } from '@/hooks/useToast';
 import { projectSchema, projectFormFields, type ProjectFormData } from './schema';
+import { ProjectInformationForm } from './components/ProjectInformationForm';
 
 export function ProjectPage() {
     const { projects, isLoading, refresh, create, update, remove } = useProjects();
@@ -40,7 +43,17 @@ export function ProjectPage() {
                 ...data,
                 crdfd_startdate: data.startDate,
                 crdfd_enddate: data.endDate,
+                crdfd_duration: data.duration,
+                crdfd_priority: data.priority,
+                // Map Prompts
+                crdfd_projectcontext: data.projectContext,
+                crdfd_objective: data.objective,
+                crdfd_scope: data.scope,
+                crdfd_planning: data.planning,
             };
+
+            // Remove undefined values to avoid overwriting with null/empty if not intended
+            Object.keys(payload).forEach(key => (payload as any)[key] === undefined && delete (payload as any)[key]);
 
             if (selected) {
                 await update(selected.id, payload as any);
@@ -202,44 +215,72 @@ export function ProjectPage() {
             </div>
 
             {/* Modals */}
-            {/* Modals */}
             <Modal
                 isOpen={isFormOpen}
                 onClose={() => { setIsFormOpen(false); setSelected(null); }}
                 title={selected ? 'Edit Project' : 'New Project'}
-                size={selected ? 'full' : 'lg'}
-                className={selected ? "!w-[95%] !h-[95%] max-w-none" : "!max-w-[85vw]"}
+                size={selected ? 'full' : 'xl'}
+                className={selected ? "!w-[95%] !h-[95%] max-w-none" : "!max-w-[85vw] w-[1000px]"}
                 hideHeader={!!selected}
             >
-                <Tabs defaultValue="general" className="w-full h-full flex flex-col">
+                <Tabs defaultValue={selected ? "overview" : "general"} className="w-full h-full flex flex-col">
                     <div className="border-b px-1">
                         <TabsList>
-                            <TabsTrigger value="general">General Information</TabsTrigger>
+                            {!selected && <TabsTrigger value="general">General Information</TabsTrigger>}
+                            {selected && <TabsTrigger value="overview">Overview</TabsTrigger>}
+                            {selected && <TabsTrigger value="general">Information</TabsTrigger>}
                             {selected && <TabsTrigger value="tasks">Task Configuration</TabsTrigger>}
                             {selected && <TabsTrigger value="taskflow">Task Flow</TabsTrigger>}
+                            {selected && <TabsTrigger value="instances">Instances</TabsTrigger>}
                         </TabsList>
                     </div>
 
-                    <TabsContent value="general" className="flex-1 overflow-y-auto p-1 pt-4">
-                        <FormBuilder<ProjectFormData>
-                            fields={projectFormFields}
-                            schema={projectSchema}
+                    {/* Overview Tab - Project Summary */}
+                    {selected && (
+                        <TabsContent value="overview" className="flex-1 overflow-y-auto p-0 h-full">
+                            <ProjectOverview
+                                projectId={selected.id}
+                                projectData={{
+                                    name: selected.name,
+                                    status: selected.status,
+                                    priority: selected.priority,
+                                    department: selected.department,
+                                    startDate: selected.startDate,
+                                    endDate: selected.endDate,
+                                }}
+                            />
+                        </TabsContent>
+                    )}
+
+                    {/* General/Settings Tab */}
+                    <TabsContent value="general" className="flex-1 overflow-hidden p-0 h-full">
+                        <ProjectInformationForm
                             defaultValues={initialValues}
                             onSubmit={handleSubmit}
                             onCancel={() => setIsFormOpen(false)}
                             isLoading={isLoading}
+                            submitText={selected ? 'Update' : 'Create'}
                         />
                     </TabsContent>
 
+                    {/* Task Configuration Tab */}
                     {selected && (
                         <TabsContent value="tasks" className="flex-1 overflow-hidden p-1 pt-4 h-full">
                             <ProjectTaskSettings projectId={selected.id} />
                         </TabsContent>
                     )}
 
+                    {/* Task Flow Tab */}
                     {selected && (
                         <TabsContent value="taskflow" className="flex-1 overflow-hidden p-0 h-full">
                             <TaskFlowCanvas projectId={selected.id} />
+                        </TabsContent>
+                    )}
+
+                    {/* Instances Tab */}
+                    {selected && (
+                        <TabsContent value="instances" className="flex-1 overflow-hidden p-0 h-full">
+                            <ProjectInstances projectId={selected.id} />
                         </TabsContent>
                     )}
                 </Tabs>

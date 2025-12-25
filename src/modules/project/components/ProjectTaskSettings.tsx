@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useDataverse } from '@stores/dataverseStore';
-import { Button, Tabs, TabsList, TabsTrigger, TabsContent, Input } from '@components/ui';
+import { Button, Tabs, TabsList, TabsTrigger, TabsContent, Input, Textarea } from '@components/ui';
 import { Plus, Search, Trash2, Settings, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { TaskTypeAttributeSettings } from '@modules/task-type/TaskTypeAttributeSettings';
@@ -15,6 +15,7 @@ interface Props {
 export function ProjectTaskSettings({ projectId }: Props) {
     const {
         taskTypes,
+        projects,
         eventTypeTaskTypeMappings,
         taskTypeAttributeMappings,
         taskTypeAttributes, // Keep attributes logic as is
@@ -22,6 +23,8 @@ export function ProjectTaskSettings({ projectId }: Props) {
         deactivateEventTypeTaskTypeMapping,
         createTaskType,
         batchUpdateTaskTypeAttributeMappings,
+        updateProject,
+        updateEventTypeTaskTypeMapping,
         isLoading
     } = useDataverse();
 
@@ -30,6 +33,9 @@ export function ProjectTaskSettings({ projectId }: Props) {
 
     const [quickAddSearch, setQuickAddSearch] = useState('');
     const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+
+    // Get Project
+    const project = useMemo(() => projects.find(p => p.id === projectId), [projects, projectId]);
 
     // Mappings for this project (using EventTypeTaskTypeMapping table)
     const currentMappings = useMemo(() =>
@@ -88,6 +94,11 @@ export function ProjectTaskSettings({ projectId }: Props) {
         setOptimisticSelectedIds(null);
     }, [selectedTaskTypeId]);
 
+    // Get current mapping for selected task
+    const selectedMapping = useMemo(() =>
+        currentMappings.find(m => m.taskTypeId === selectedTaskTypeId),
+        [currentMappings, selectedTaskTypeId]
+    );
 
     // Attribute Settings Logic - Optimized
     const handleAttributeSelectionChange = async (newSelectedIds: string[]) => {
@@ -222,10 +233,45 @@ export function ProjectTaskSettings({ projectId }: Props) {
         }
     };
 
+    // Handler for Project Context
+    const handleProjectContextChange = async (val: string) => {
+        if (!project) return;
+        try {
+            await updateProject(project.id, { crdfd_projectcontext: val });
+            toast.success('Project context updated');
+        } catch (error) {
+            toast.error('Failed to update project context');
+        }
+    };
+
+    // Handler for Task Mapping updates (Task Context, Prompts)
+    const handleTaskMappingUpdate = async (field: string, val: string) => {
+        if (!selectedTaskTypeId) return;
+        const mapping = currentMappings.find(m => m.taskTypeId === selectedTaskTypeId);
+        if (!mapping) return;
+
+        try {
+            await updateEventTypeTaskTypeMapping(mapping.id, { [field]: val });
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update task settings');
+        }
+    };
+
     return (
         <div className="flex h-full border rounded-lg overflow-hidden bg-white shadow-sm">
             {/* Sidebar List */}
-            <div className="w-1/3 border-r bg-neutral-50 flex flex-col">
+            <div className="w-[400px] shrink-0 border-r bg-neutral-50 flex flex-col">
+                <div className="p-3 border-b bg-white">
+                    <label className="block text-xs font-semibold text-neutral-700 mb-1">Project Context</label>
+                    <Textarea
+                        className="w-full text-xs min-h-[80px] resize-y"
+                        placeholder="Context for AI generation..."
+                        defaultValue={project?.projectContext || ''}
+                        onBlur={(e) => handleProjectContextChange(e.target.value)}
+                    />
+                </div>
+
                 <div className="p-3 border-b">
                     {/* Quick Add Dropdown with Create New Button */}
                     <div className="flex gap-2">
@@ -256,7 +302,6 @@ export function ProjectTaskSettings({ projectId }: Props) {
                                                 onClick={() => handleAddTaskType(t.id)}
                                             >
                                                 <span className="font-medium text-neutral-700">{t.name}</span>
-                                                <Plus className="w-3 h-3 text-primary-500 opacity-0 group-hover:opacity-100" />
                                             </div>
                                         ))
                                     )}
@@ -320,11 +365,20 @@ export function ProjectTaskSettings({ projectId }: Props) {
                             <h2 className="text-lg font-semibold text-neutral-900 flex items-center gap-2">
                                 <Settings className="w-5 h-5 text-neutral-500" />
                                 {selectedTaskType.name}
-                                <span className="text-xs font-normal text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full">
-                                    {selectedTaskType.code}
-                                </span>
                             </h2>
                             <p className="text-sm text-neutral-500 mt-1">{selectedTaskType.description || 'Configure task settings'}</p>
+                        </div>
+
+                        {/* Task Context Section (General for this task in project) */}
+                        <div className="px-6 py-4 border-b bg-neutral-50/30">
+                            <label className="block text-sm font-medium text-neutral-700 mb-1">Task Context (Planning)</label>
+                            <Textarea
+                                className="w-full text-sm min-h-[60px]"
+                                placeholder="Specific context for this task..."
+                                defaultValue={selectedMapping?.planningTaskContext || ''}
+                                onBlur={(e) => handleTaskMappingUpdate('crdfd_planningtaskcontext', e.target.value)}
+                                key={`context-${selectedTaskTypeId}`} // Re-render on switch
+                            />
                         </div>
 
                         <Tabs defaultValue="attributes" className="flex-1 flex flex-col overflow-hidden">
@@ -336,7 +390,17 @@ export function ProjectTaskSettings({ projectId }: Props) {
                             </div>
 
                             <TabsContent value="attributes" className="flex-1 overflow-y-auto p-6">
-                                <div className="max-w-4xl">
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-neutral-700 mb-1">Attribute Prompt</label>
+                                    <Textarea
+                                        className="w-full text-sm mb-4"
+                                        placeholder="Prompt for attribute generation..."
+                                        defaultValue={selectedMapping?.attributePrompt || ''}
+                                        onBlur={(e) => handleTaskMappingUpdate('crdfd_attributeprompt', e.target.value)}
+                                        key={`attr-prompt-${selectedTaskTypeId}`}
+                                    />
+                                </div>
+                                <div>
                                     <h3 className="text-sm font-semibold text-neutral-900 mb-4">Visible Attributes</h3>
                                     <TaskTypeAttributeSettings
                                         attributes={taskTypeAttributes}
@@ -346,8 +410,20 @@ export function ProjectTaskSettings({ projectId }: Props) {
                                 </div>
                             </TabsContent>
 
-                            <TabsContent value="actions" className="flex-1 overflow-hidden p-6">
-                                <TaskActionFlow taskTypeId={selectedTaskType.id} />
+                            <TabsContent value="actions" className="flex-1 overflow-hidden p-6 flex flex-col">
+                                <div className="mb-4 flex-shrink-0">
+                                    <label className="block text-sm font-medium text-neutral-700 mb-1">Action Flow Prompt</label>
+                                    <Textarea
+                                        className="w-full text-sm"
+                                        placeholder="Prompt for action flow generation..."
+                                        defaultValue={selectedMapping?.actionPrompt || ''}
+                                        onBlur={(e) => handleTaskMappingUpdate('crdfd_actionprompt', e.target.value)}
+                                        key={`action-prompt-${selectedTaskTypeId}`}
+                                    />
+                                </div>
+                                <div className="flex-1 overflow-hidden">
+                                    <TaskActionFlow taskTypeId={selectedTaskType.id} />
+                                </div>
                             </TabsContent>
                         </Tabs>
                     </div>

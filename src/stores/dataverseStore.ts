@@ -199,6 +199,124 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
                 throw new Error('Failed to load any data from Dataverse');
             }
 
+            // MOCK DATA GENERATION
+            // Generate mock instances and assign to the first available project to ensure visibility
+            const projects = get().projects;
+            if (projects.length > 0) {
+                const targetProjectId = projects[0].id;
+
+                // Mock Task Instances
+                const mockTasks: TaskInstance[] = [
+                    {
+                        id: 'mock-task-1',
+                        title: 'Review Project Requirements',
+                        description: 'Analyze the business requirements document and identify key deliverables.',
+                        taskTypeId: 'tt-1',
+                        projectId: targetProjectId,
+                        status: 'completed',
+                        priority: 'high',
+                        dueDate: new Date(Date.now() - 86400000 * 2), // 2 days ago
+                        createdAt: new Date(Date.now() - 86400000 * 5),
+                        updatedAt: new Date(Date.now() - 86400000 * 2),
+                    },
+                    {
+                        id: 'mock-task-2',
+                        title: 'Design Database Schema',
+                        description: 'Create ERD and define table structures for the new module.',
+                        taskTypeId: 'tt-2',
+                        projectId: targetProjectId,
+                        status: 'in-progress',
+                        priority: 'critical',
+                        dueDate: new Date(Date.now() + 86400000 * 2), // in 2 days
+                        createdAt: new Date(Date.now() - 86400000 * 1),
+                        updatedAt: new Date(Date.now()),
+                    },
+                    {
+                        id: 'mock-task-3',
+                        title: 'API Implementation',
+                        description: 'Implement RESTful endpoints for user authentication.',
+                        taskTypeId: 'tt-3',
+                        projectId: targetProjectId,
+                        status: 'blocked',
+                        priority: 'medium',
+                        dueDate: new Date(Date.now() + 86400000 * 5),
+                        createdAt: new Date(Date.now()),
+                        updatedAt: new Date(Date.now()),
+                    },
+                    {
+                        id: 'mock-task-4',
+                        title: 'Frontend Integration',
+                        description: 'Connect UI components with the backend APIs.',
+                        taskTypeId: 'tt-4',
+                        projectId: targetProjectId,
+                        status: 'not-started',
+                        priority: 'medium',
+                        dueDate: new Date(Date.now() + 86400000 * 7),
+                        createdAt: new Date(Date.now()),
+                        updatedAt: new Date(Date.now()),
+                    },
+                    {
+                        id: 'mock-task-5',
+                        title: 'Unit Testing',
+                        description: 'Write unit tests for core business logic.',
+                        taskTypeId: 'tt-5',
+                        projectId: targetProjectId,
+                        status: 'not-started',
+                        priority: 'low',
+                        dueDate: new Date(Date.now() + 86400000 * 10),
+                        createdAt: new Date(Date.now()),
+                        updatedAt: new Date(Date.now()),
+                    }
+                ];
+
+                // Mock Action Instances
+                const mockActions: ActionInstance[] = [
+                    {
+                        id: 'mock-action-1',
+                        actionTypeId: 'at-1',
+                        taskInstanceId: 'mock-task-1',
+                        status: 'completed',
+                        result: 'Document approved',
+                        executedAt: new Date(Date.now() - 86400000 * 2),
+                        createdAt: new Date(Date.now() - 86400000 * 2),
+                        updatedAt: new Date(Date.now() - 86400000 * 2),
+                    },
+                    {
+                        id: 'mock-action-2',
+                        actionTypeId: 'at-2',
+                        taskInstanceId: 'mock-task-1',
+                        status: 'completed',
+                        result: 'Notifications sent',
+                        executedAt: new Date(Date.now() - 86400000 * 2),
+                        createdAt: new Date(Date.now() - 86400000 * 2),
+                        updatedAt: new Date(Date.now() - 86400000 * 2),
+                    },
+                    {
+                        id: 'mock-action-3',
+                        actionTypeId: 'at-3',
+                        taskInstanceId: 'mock-task-2',
+                        status: 'failed',
+                        result: 'Connection timeout',
+                        executedAt: new Date(Date.now() - 3600000), // 1 hour ago
+                        createdAt: new Date(Date.now() - 3600000),
+                        updatedAt: new Date(Date.now() - 3600000),
+                    },
+                    {
+                        id: 'mock-action-4',
+                        actionTypeId: 'at-4',
+                        taskInstanceId: 'mock-task-3',
+                        status: 'pending',
+                        createdAt: new Date(Date.now()),
+                        updatedAt: new Date(Date.now()),
+                    }
+                ];
+
+                set((state: DataverseState) => ({
+                    taskInstances: [...state.taskInstances, ...mockTasks],
+                    actionInstances: [...state.actionInstances, ...mockActions]
+                }));
+            }
+
             set({ isInitialized: true });
 
             const someFailed = results.some(r => r.status === 'rejected');

@@ -1,15 +1,22 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
-import { FileText } from 'lucide-react';
+import { FileText, Trash2 } from 'lucide-react';
 
 export interface TaskNodeData extends Record<string, unknown> {
     label: string;
     taskTypeId: string;
+    onRemove?: (taskTypeId: string) => void;
 }
 
 export const TaskNode = memo(({ data, selected }: NodeProps) => {
     const nodeData = data as TaskNodeData;
+
+    const handleRemove = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        nodeData.onRemove?.(nodeData.taskTypeId);
+    };
 
     return (
         <div
@@ -21,6 +28,19 @@ export const TaskNode = memo(({ data, selected }: NodeProps) => {
                     : 'border-neutral-200 hover:border-primary-300 hover:shadow-lg'}
             `}
         >
+            {/* Remove Button - shown when selected */}
+            {selected && (
+                <div className="absolute -top-9 left-1/2 -translate-x-1/2 z-10">
+                    <button
+                        onClick={handleRemove}
+                        className="p-2 bg-white border border-red-200 rounded-lg shadow-lg hover:bg-red-50 text-red-600 transition-colors"
+                        title="Remove from Project"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+            )}
+
             {/* Input Handle */}
             <Handle
                 type="target"
@@ -58,3 +78,4 @@ export const TaskNode = memo(({ data, selected }: NodeProps) => {
 });
 
 TaskNode.displayName = 'TaskNode';
+

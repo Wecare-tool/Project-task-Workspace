@@ -9,6 +9,12 @@ export const projectSchema = z.object({
     status: z.enum(['active', 'archived', 'on-hold']),
     startDate: z.date({ required_error: 'Start date is required' }),
     endDate: z.date().optional().nullable(),
+    duration: z.number().optional(),
+    // Prompts
+    projectContext: z.string().optional(),
+    objective: z.string().optional(),
+    scope: z.string().optional(),
+    planning: z.string().optional(),
 });
 
 export type ProjectFormData = z.infer<typeof projectSchema>;

@@ -266,6 +266,9 @@ export interface DataverseEventTypeTaskTypeMapping {
     'crdfd_outcome@OData.Community.Display.V1.FormattedValue'?: string;
     crdfd_isinitialtask?: boolean;
     '_crdfd_project_value'?: string;
+    crdfd_planningtaskcontext?: string; // New prompt field
+    crdfd_attributeprompt?: string;     // New prompt field
+    crdfd_actionprompt?: string;        // New prompt field
     [key: string]: unknown;
 }
 
@@ -279,6 +282,9 @@ export interface EventTypeTaskTypeMapping {
     outcomeLabel?: string;
     isInitialTask: boolean;
     projectId?: string;
+    planningTaskContext?: string;
+    attributePrompt?: string;
+    actionPrompt?: string;
 }
 
 export function mapEventTypeTaskTypeMapping(item: DataverseEventTypeTaskTypeMapping): EventTypeTaskTypeMapping {
@@ -293,6 +299,9 @@ export function mapEventTypeTaskTypeMapping(item: DataverseEventTypeTaskTypeMapp
         outcomeLabel: item['crdfd_outcome@OData.Community.Display.V1.FormattedValue'],
         isInitialTask: item.crdfd_isinitialtask ?? false,
         projectId: item['_crdfd_project_value'],
+        planningTaskContext: item.crdfd_planningtaskcontext,
+        attributePrompt: item.crdfd_attributeprompt,
+        actionPrompt: item.crdfd_actionprompt,
     };
 }
 
@@ -405,6 +414,10 @@ export enum DependencyOutcome {
 export interface DataverseProject {
     crdfd_projectid?: string;
     crdfd_name: string;
+    crdfd_projectcontext?: string; // New prompt field
+    crdfd_objective?: string;      // New prompt field
+    crdfd_scope?: string;          // New prompt field
+    crdfd_planning?: string;       // New prompt field
     crdfd_projecttype?: number;
     'crdfd_projecttype@OData.Community.Display.V1.FormattedValue'?: string;
     crdfd_priority?: number;
@@ -416,6 +429,7 @@ export interface DataverseProject {
     crdfd_department?: string;
     crdfd_startdate?: string;
     crdfd_enddate?: string;
+    crdfd_duration?: number;
     createdon?: string;
     modifiedon?: string;
 }
@@ -430,8 +444,13 @@ export interface ProjectNew {
     department?: string;
     startDate?: Date;
     endDate?: Date;
+    duration?: number;
     createdAt: Date;
     updatedAt: Date;
+    projectContext?: string;
+    objective?: string;
+    scope?: string;
+    planning?: string;
 }
 
 export function mapDataverseProject(item: DataverseProject): ProjectNew {
@@ -445,8 +464,13 @@ export function mapDataverseProject(item: DataverseProject): ProjectNew {
         department: item.crdfd_department || '',
         startDate: item.crdfd_startdate ? new Date(item.crdfd_startdate) : undefined,
         endDate: item.crdfd_enddate ? new Date(item.crdfd_enddate) : undefined,
+        duration: item.crdfd_duration,
         createdAt: item.createdon ? new Date(item.createdon) : new Date(),
         updatedAt: item.modifiedon ? new Date(item.modifiedon) : new Date(),
+        projectContext: item.crdfd_projectcontext,
+        objective: item.crdfd_objective,
+        scope: item.crdfd_scope,
+        planning: item.crdfd_planning,
     };
 }
 

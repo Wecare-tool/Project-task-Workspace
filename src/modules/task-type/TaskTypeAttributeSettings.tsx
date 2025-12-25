@@ -122,7 +122,7 @@ export function TaskTypeAttributeSettings({
                             </div>
 
                             {!isCollapsed && (
-                                <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white animate-fade-in">
+                                <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 bg-white animate-fade-in">
                                     {attributes.map(attr => {
                                         const isSelected = selectedIds.includes(attr.id);
                                         return (

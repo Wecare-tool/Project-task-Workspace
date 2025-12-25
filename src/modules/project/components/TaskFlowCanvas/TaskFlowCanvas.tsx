@@ -2,14 +2,15 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { DragEvent } from 'react';
 import {
     ReactFlow,
+    ReactFlowProvider,
     Background,
     Controls,
     MiniMap,
     useNodesState,
     useEdgesState,
-    addEdge,
     BackgroundVariant,
     Panel,
+    useReactFlow,
 } from '@xyflow/react';
 import type { Node, Edge, Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -40,7 +41,31 @@ function getGridPosition(index: number, columns: number = 3) {
     };
 }
 
-export function TaskFlowCanvas({ projectId }: Props) {
+// localStorage helpers for persisting node positions
+const STORAGE_KEY_PREFIX = 'taskflow-positions-';
+
+function getStoredNodePositions(projectId: string): Record<string, { x: number; y: number }> {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY_PREFIX + projectId);
+        return stored ? JSON.parse(stored) : {};
+    } catch {
+        return {};
+    }
+}
+
+function saveNodePositions(projectId: string, nodes: Node[]) {
+    try {
+        const positions: Record<string, { x: number; y: number }> = {};
+        nodes.forEach(node => {
+            positions[node.id] = { x: node.position.x, y: node.position.y };
+        });
+        localStorage.setItem(STORAGE_KEY_PREFIX + projectId, JSON.stringify(positions));
+    } catch {
+        // Silently fail if localStorage is not available
+    }
+}
+
+function TaskFlowCanvasInner({ projectId }: Props) {
     const {
         taskTypes,
         eventTypeTaskTypeMappings,
@@ -82,13 +107,17 @@ export function TaskFlowCanvas({ projectId }: Props) {
             if (m.nextTaskId) involvedIds.add(m.nextTaskId);
         });
 
+        // Load stored positions from localStorage
+        const storedPositions = getStoredNodePositions(projectId);
+
         const nodes: Node[] = [];
         let index = 0;
 
         involvedIds.forEach(id => {
             const task = taskTypes.find(t => t.id === id);
             if (task) {
-                const pos = getGridPosition(index);
+                // Use stored position if available, otherwise use grid layout
+                const pos = storedPositions[id] || getGridPosition(index);
                 nodes.push({
                     id: task.id,
                     type: 'taskNode',
@@ -100,7 +129,7 @@ export function TaskFlowCanvas({ projectId }: Props) {
         });
 
         return nodes;
-    }, [flowMappings, taskTypes]);
+    }, [flowMappings, taskTypes, projectId]);
 
     // Convert flow mappings to edges
     const initialEdges = useMemo((): Edge[] => {
@@ -119,6 +148,7 @@ export function TaskFlowCanvas({ projectId }: Props) {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [showMiniMap, setShowMiniMap] = useState(true);
+    const { screenToFlowPosition } = useReactFlow();
 
     // Sync edges with flowMappings when data changes
     useEffect(() => {
@@ -135,6 +165,17 @@ export function TaskFlowCanvas({ projectId }: Props) {
         setEdges(newEdges);
     }, [flowMappings, setEdges]);
 
+    // Save node positions to localStorage when nodes change (debounced)
+    useEffect(() => {
+        if (nodes.length === 0) return;
+
+        const timeoutId = setTimeout(() => {
+            saveNodePositions(projectId, nodes);
+        }, 500); // Debounce 500ms
+
+        return () => clearTimeout(timeoutId);
+    }, [nodes, projectId]);
+
     // Handle edge deletion - DELETE the mapping row
     const handleDeleteEdge = useCallback(async (edgeId: string): Promise<void> => {
         if (!confirm('Remove this connection?')) return;
@@ -150,7 +191,6 @@ export function TaskFlowCanvas({ projectId }: Props) {
             // DEACTIVATE (delete) the mapping row
             await deactivateEventTypeTaskTypeMapping(mapping.id);
             await refreshEventTypeTaskTypeMappings();
-            toast.success('Connection removed');
         } catch (error) {
             console.error(error);
             toast.error('Failed to remove connection');
@@ -167,6 +207,41 @@ export function TaskFlowCanvas({ projectId }: Props) {
             },
         })),
         [edges, handleDeleteEdge]
+    );
+
+    // Handle remove task from project
+    const handleRemoveTask = useCallback(async (taskTypeId: string) => {
+        if (!confirm('Remove this task from the project?')) return;
+
+        try {
+            // Find and deactivate ALL mappings for this task (base mapping + flow connections)
+            const taskMappings = projectMappings.filter(m =>
+                m.taskTypeId === taskTypeId || m.nextTaskId === taskTypeId
+            );
+
+            for (const mapping of taskMappings) {
+                await deactivateEventTypeTaskTypeMapping(mapping.id);
+            }
+
+            await refreshEventTypeTaskTypeMappings();
+            // Remove node from canvas
+            setNodes(nds => nds.filter(n => n.id !== taskTypeId));
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to remove task');
+        }
+    }, [projectMappings, deactivateEventTypeTaskTypeMapping, refreshEventTypeTaskTypeMappings, setNodes]);
+
+    // Inject action handlers into node data
+    const nodesWithHandlers = useMemo(() =>
+        nodes.map(n => ({
+            ...n,
+            data: {
+                ...(n.data as TaskNodeData),
+                onRemove: handleRemoveTask,
+            },
+        })),
+        [nodes, handleRemoveTask]
     );
 
     // Handle new connection
@@ -215,7 +290,6 @@ export function TaskFlowCanvas({ projectId }: Props) {
             }
 
             await refreshEventTypeTaskTypeMappings();
-            toast.success('Connection created');
         } catch (error) {
             console.error(error);
             toast.error('Failed to create connection');
@@ -243,13 +317,16 @@ export function TaskFlowCanvas({ projectId }: Props) {
             return;
         }
 
-        const bounds = reactFlowWrapper.current?.getBoundingClientRect();
-        if (!bounds) return;
+        // Get drop position relative to the canvas, using screenToFlowPosition
+        // to properly convert screen coordinates to flow coordinates (accounting for zoom/pan)
+        const position = screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
+        });
 
-        const position = {
-            x: event.clientX - bounds.left - 80,
-            y: event.clientY - bounds.top - 30,
-        };
+        // Offset so the node appears centered under the cursor
+        position.x -= 80;
+        position.y -= 30;
 
         const newNode: Node = {
             id: task.id,
@@ -259,8 +336,7 @@ export function TaskFlowCanvas({ projectId }: Props) {
         };
 
         setNodes((nds: Node[]) => [...nds, newNode]);
-        toast.success(`Added ${task.name} to canvas`);
-    }, [taskTypes, nodes, setNodes]);
+    }, [taskTypes, nodes, setNodes, screenToFlowPosition]);
 
     const onDragStart = (event: DragEvent, taskTypeId: string) => {
         event.dataTransfer.setData('application/tasktype', taskTypeId);
@@ -273,7 +349,7 @@ export function TaskFlowCanvas({ projectId }: Props) {
     return (
         <div className="h-full flex">
             {/* Sidebar */}
-            <div className="w-64 border-r bg-neutral-50 flex flex-col">
+            <div className="w-[400px] shrink-0 border-r bg-neutral-50 flex flex-col">
                 <div className="p-3 border-b">
                     <h3 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
                         <GitBranch className="w-4 h-4" />
@@ -319,7 +395,7 @@ export function TaskFlowCanvas({ projectId }: Props) {
             {/* Canvas */}
             <div className="flex-1" ref={reactFlowWrapper}>
                 <ReactFlow
-                    nodes={nodes}
+                    nodes={nodesWithHandlers}
                     edges={edgesWithHandlers}
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
@@ -328,7 +404,9 @@ export function TaskFlowCanvas({ projectId }: Props) {
                     onDragOver={onDragOver}
                     nodeTypes={nodeTypes}
                     edgeTypes={edgeTypes}
-                    fitView
+                    defaultViewport={{ x: 100, y: 50, zoom: 1 }}
+                    minZoom={0.3}
+                    maxZoom={2}
                     snapToGrid
                     snapGrid={[15, 15]}
                     defaultEdgeOptions={{
@@ -382,5 +460,14 @@ export function TaskFlowCanvas({ projectId }: Props) {
                 </ReactFlow>
             </div>
         </div>
+    );
+}
+
+// Wrapper to provide ReactFlow context
+export function TaskFlowCanvas({ projectId }: Props) {
+    return (
+        <ReactFlowProvider>
+            <TaskFlowCanvasInner projectId={projectId} />
+        </ReactFlowProvider>
     );
 }
