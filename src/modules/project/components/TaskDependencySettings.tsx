@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useDataverse } from '@stores/dataverseStore';
-import { Button } from '@components/ui';
-import { Plus, Trash2, ArrowRight, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { Trash2, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
 import { DependencyOutcome } from '@services/dataverseTypes';
 
 interface Props {

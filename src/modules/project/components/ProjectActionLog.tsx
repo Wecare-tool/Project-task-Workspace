@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useDataverse } from '@stores/dataverseStore';
 import { DataTable, StatusBadge, CommandBar, type CommandBarItem } from '@components/shared';
-import { formatDateTime, formatRelativeTime } from '@utils/index';
+import { formatDateTime } from '@utils/index';
 import type { ActionInstance, TableColumn } from '@/types';
 import { RefreshCw, Download, Zap } from 'lucide-react';
 import { exportToCsv } from '@/utils/exportUtils';
@@ -140,7 +140,6 @@ export function ProjectActionLog({ projectId }: ProjectActionLogProps) {
                 searchValue={searchQuery}
                 items={commandBarItems}
                 selectedCount={selectedRows.length}
-                placeholder="Search actions..."
             />
 
             <div className="flex-1 card p-3 overflow-hidden">

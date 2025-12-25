@@ -36,6 +36,3 @@ Thumbs.db
 
 # Vite
 *.local
-
-.env
-.env.*

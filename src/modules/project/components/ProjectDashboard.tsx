@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useDataverse } from '@stores/dataverseStore';
-import { formatDateTime, formatRelativeTime } from '@utils/index';
+import { formatRelativeTime } from '@utils/index';
 import { StatusBadge } from '@components/shared';
 import {
     Activity,
@@ -33,7 +33,7 @@ const ACTION_STATUS_COLORS = {
 };
 
 export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
-    const { taskInstances, actionInstances, actionTypes } = useDataverse();
+    const { taskInstances, actionInstances, actionTypeNews } = useDataverse();
 
     // Filter instances by project
     const projectTaskInstances = useMemo(() =>
@@ -69,7 +69,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     const actionsByTypeData = useMemo(() => {
         const countByType: Record<string, number> = {};
         projectActionInstances.forEach(action => {
-            const type = actionTypes.find(t => t.id === action.actionTypeId);
+            const type = actionTypeNews.find((t: any) => t.id === action.actionTypeId);
             const typeName = type?.name || 'Unknown';
             countByType[typeName] = (countByType[typeName] || 0) + 1;
         });
@@ -77,7 +77,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
             name: name.length > 15 ? name.substring(0, 15) + '...' : name,
             count,
         }));
-    }, [projectActionInstances, actionTypes]);
+    }, [projectActionInstances, actionTypeNews]);
 
     // Timeline data
     const recentActivity = useMemo(() => {

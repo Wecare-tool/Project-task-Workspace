@@ -377,6 +377,7 @@ export interface DataverseTaskDependency {
     'crdfd_outcome@OData.Community.Display.V1.FormattedValue'?: string;
     createdon?: string;
     modifiedon?: string;
+    [key: string]: unknown;
 }
 
 export interface TaskDependencyNew {

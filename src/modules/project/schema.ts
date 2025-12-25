@@ -7,6 +7,7 @@ export const projectSchema = z.object({
     code: z.string().min(1, 'Project code is required').max(20, 'Project code max 20 characters'),
     description: z.string().max(500, 'Description max 500 characters').optional(),
     status: z.enum(['active', 'archived', 'on-hold']),
+    priority: z.number().optional(),
     startDate: z.date({ required_error: 'Start date is required' }),
     endDate: z.date().optional().nullable(),
     duration: z.number().optional(),

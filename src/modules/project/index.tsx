@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ProjectNew } from '@services/dataverseTypes';
 import { Button, Tabs, TabsList, TabsTrigger, TabsContent } from '@components/ui';
-import { Modal, ConfirmModal, DataTable, FormBuilder, CommandBar, type CommandBarItem } from '@components/shared';
+import { Modal, ConfirmModal, DataTable, CommandBar, type CommandBarItem } from '@components/shared';
 import { Plus } from 'lucide-react';
 import { useProjects } from './hooks';
 import { ProjectTaskSettings } from './components/ProjectTaskSettings';
@@ -12,7 +12,7 @@ import type { TableColumn } from '@/types';
 import { formatDate } from '@utils/index';
 import { exportToCsv } from '@/utils/exportUtils';
 import { useToast } from '@/hooks/useToast';
-import { projectSchema, projectFormFields, type ProjectFormData } from './schema';
+import { type ProjectFormData } from './schema';
 import { ProjectInformationForm } from './components/ProjectInformationForm';
 
 export function ProjectPage() {
@@ -28,6 +28,7 @@ export function ProjectPage() {
     // Initial values for the form
     const initialValues: Partial<ProjectFormData> = selected ? {
         ...selected,
+        priority: undefined, // Priority is string field in ProjectNew but number in FormData, and not editable here
         status: (selected.status as any) || 'active',
         startDate: selected.startDate ? new Date(selected.startDate) : undefined,
         endDate: selected.endDate ? new Date(selected.endDate) : undefined,

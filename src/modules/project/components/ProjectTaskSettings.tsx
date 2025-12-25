@@ -200,27 +200,13 @@ export function ProjectTaskSettings({ projectId }: Props) {
 
             await createTaskType(payload);
             setIsCreateModalOpen(false);
-            setIsAddModalOpen(true); // Open add modal so they can select it
+            setIsQuickAddOpen(true); // Open quick add so they can search/select it
             toast.success('Task Type created. Please select it to add to project.');
         } catch (error) {
             toast.error('Failed to create task type');
         }
     };
 
-    const handleRemoveTaskTypeFromModal = async (taskTypeId: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!confirm('Remove this task type from the project?')) return;
-
-        try {
-            const mapping = currentMappings.find(m => m.taskTypeId === taskTypeId);
-            if (mapping) {
-                await deactivateEventTypeTaskTypeMapping(mapping.id);
-                toast.success('Task type removed successfully');
-            }
-        } catch (error) {
-            toast.error('Failed to remove task type');
-        }
-    };
 
     const handleRemoveTaskType = async (taskTypeId: string, e: React.MouseEvent) => {
         e.stopPropagation();
