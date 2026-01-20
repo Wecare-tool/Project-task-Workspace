@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { projectStorage, taskInstanceStorage } from '@services/index';
-import { StatusBadge, PriorityBadge } from '@components/shared';
+import { useDataverse } from '@stores/dataverseStore';
+import { StatusBadge, PriorityBadge, Skeleton } from '@components/shared';
+import type { TaskInstance } from '@/types';
+import type { ProjectNew } from '@/services/dataverseTypes';
 import { formatDate, formatRelativeTime } from '@utils/index';
 import {
     FolderKanban,
@@ -15,25 +17,38 @@ import {
 } from 'lucide-react';
 
 export function DashboardPage() {
-    const projects = useMemo(() => projectStorage.getAll(), []);
-    const tasks = useMemo(() => taskInstanceStorage.getAll(), []);
+    // OPTIMIZATION: Use selective store access with a memoized selector to prevent
+    // unnecessary re-renders when other parts of the store (e.g. event types) change.
+    const selector = useCallback((state: any) => ({
+        projects: state.projects,
+        taskInstances: state.taskInstances,
+        isLoading: state.isLoading
+    }), []);
+
+    const { projects, taskInstances: tasks, isLoading } = useDataverse(selector);
 
     // Project stats
-    const projectStats = useMemo(() => ({
-        total: projects.length,
-        active: projects.filter(p => p.status === 'active').length,
-        archived: projects.filter(p => p.status === 'archived').length,
-        onHold: projects.filter(p => p.status === 'on-hold').length,
-    }), [projects]);
+    const projectStats = useMemo(() => {
+        const p = projects as ProjectNew[];
+        return {
+            total: p.length,
+            active: p.filter(proj => proj.status?.toLowerCase() === 'active').length,
+            archived: p.filter(proj => proj.status?.toLowerCase() === 'archived').length,
+            onHold: p.filter(proj => proj.status?.toLowerCase() === 'on-hold').length,
+        };
+    }, [projects]);
 
     // Task stats
-    const taskStats = useMemo(() => ({
-        total: tasks.length,
-        notStarted: tasks.filter(t => t.status === 'not-started').length,
-        inProgress: tasks.filter(t => t.status === 'in-progress').length,
-        blocked: tasks.filter(t => t.status === 'blocked').length,
-        completed: tasks.filter(t => t.status === 'completed').length,
-    }), [tasks]);
+    const taskStats = useMemo(() => {
+        const t = tasks as TaskInstance[];
+        return {
+            total: t.length,
+            notStarted: t.filter(task => task.status === 'not-started').length,
+            inProgress: t.filter(task => task.status === 'in-progress').length,
+            blocked: t.filter(task => task.status === 'blocked').length,
+            completed: t.filter(task => task.status === 'completed').length,
+        };
+    }, [tasks]);
 
     // Chart data
     const taskChartData = useMemo(() => [
@@ -44,13 +59,34 @@ export function DashboardPage() {
     ].filter(d => d.value > 0), [taskStats]);
 
     // Recent items
-    const recentProjects = useMemo(() =>
-        [...projects].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)
-        , [projects]);
+    const recentProjects = useMemo(() => {
+        const p = projects as ProjectNew[];
+        return [...p].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
+    }, [projects]);
 
-    const recentTasks = useMemo(() =>
-        [...tasks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)
-        , [tasks]);
+    const recentTasks = useMemo(() => {
+        const t = tasks as TaskInstance[];
+        return [...t].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
+    }, [tasks]);
+
+    if (isLoading && projects.length === 0) {
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <div>
+                    <Skeleton className="h-8 w-48 mb-2" />
+                    <Skeleton className="h-4 w-64" />
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <Skeleton className="h-80 w-full rounded-xl" />
+                    <Skeleton className="h-80 w-full rounded-xl" />
+                    <Skeleton className="h-80 w-full rounded-xl" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -142,7 +178,7 @@ export function DashboardPage() {
                                         <p className="font-medium text-dark-900 truncate">{project.name}</p>
                                         <p className="text-xs text-dark-400">{formatRelativeTime(project.createdAt)}</p>
                                     </div>
-                                    <StatusBadge status={project.status} size="sm" showIcon={false} />
+                                    <StatusBadge status={project.status || 'active'} size="sm" showIcon={false} />
                                 </div>
                             ))}
                         </div>
