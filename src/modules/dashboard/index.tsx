@@ -1,22 +1,34 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { projectStorage, taskInstanceStorage } from '@services/index';
+import { useDataverse } from '@stores/dataverseStore';
 import { StatusBadge, PriorityBadge } from '@components/shared';
 import { formatDate, formatRelativeTime } from '@utils/index';
 import {
     FolderKanban,
     ListChecks,
     AlertCircle,
-    CheckCircle,
     Clock,
-    TrendingUp,
     ArrowRight,
+    Settings,
+    Zap,
+    Bell,
+    Database,
+    Activity,
+    Layers,
 } from 'lucide-react';
 
 export function DashboardPage() {
-    const projects = useMemo(() => projectStorage.getAll(), []);
-    const tasks = useMemo(() => taskInstanceStorage.getAll(), []);
+    const {
+        projects,
+        taskInstances: tasks,
+        taskTypes,
+        actionTypeNews: actionTypes,
+        actionInstances,
+        eventTypes,
+        eventInstances,
+        eventSourceTypes,
+    } = useDataverse();
 
     // Project stats
     const projectStats = useMemo(() => ({
@@ -43,13 +55,35 @@ export function DashboardPage() {
         { name: 'Completed', value: taskStats.completed, color: '#22c55e' },
     ].filter(d => d.value > 0), [taskStats]);
 
+    // Metadata stats
+    const metadataStats = useMemo(() => ({
+        taskTypes: taskTypes.length,
+        actionTypes: actionTypes.length,
+        eventTypes: eventTypes.length,
+        eventSourceTypes: eventSourceTypes.length,
+    }), [taskTypes, actionTypes, eventTypes, eventSourceTypes]);
+
+    // Instance stats
+    const instanceStats = useMemo(() => ({
+        actionInstances: actionInstances.length,
+        eventInstances: eventInstances.length,
+    }), [actionInstances, eventInstances]);
+
     // Recent items
     const recentProjects = useMemo(() =>
-        [...projects].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)
+        [...projects].sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+        }).slice(0, 5)
         , [projects]);
 
     const recentTasks = useMemo(() =>
-        [...tasks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)
+        [...tasks].sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+        }).slice(0, 5)
         , [tasks]);
 
     return (
@@ -64,9 +98,13 @@ export function DashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Total Projects', value: projectStats.total, icon: FolderKanban, color: 'primary', link: '/projects' },
-                    { label: 'Active', value: projectStats.active, icon: CheckCircle, color: 'success', link: '/projects' },
                     { label: 'Tasks', value: taskStats.total, icon: ListChecks, color: 'accent', link: '/tasks' },
-                    { label: 'In Progress', value: taskStats.inProgress, icon: TrendingUp, color: 'warning', link: '/tasks' },
+                    { label: 'Task Types', value: metadataStats.taskTypes, icon: Settings, color: 'primary', link: '/task-types' },
+                    { label: 'Action Types', value: metadataStats.actionTypes, icon: Zap, color: 'warning', link: '/action-types' },
+                    { label: 'Event Types', value: metadataStats.eventTypes, icon: Bell, color: 'success', link: '/event-types' },
+                    { label: 'Event Sources', value: metadataStats.eventSourceTypes, icon: Database, color: 'primary', link: '/event-source-types' },
+                    { label: 'Action Instances', value: instanceStats.actionInstances, icon: Activity, color: 'accent', link: '/action-instances' },
+                    { label: 'Event Instances', value: instanceStats.eventInstances, icon: Layers, color: 'success', link: '/event-instances' },
                 ].map((stat) => (
                     <Link key={stat.label} to={stat.link} className="card-hover group">
                         <div className="flex items-center justify-between">
@@ -140,9 +178,9 @@ export function DashboardPage() {
                                 <div key={project.id} className="flex items-center justify-between p-3 rounded-lg bg-dark-50 hover:bg-dark-100 transition-colors">
                                     <div className="min-w-0">
                                         <p className="font-medium text-dark-900 truncate">{project.name}</p>
-                                        <p className="text-xs text-dark-400">{formatRelativeTime(project.createdAt)}</p>
+                                        <p className="text-xs text-dark-400">{project.createdAt ? formatRelativeTime(project.createdAt) : '-'}</p>
                                     </div>
-                                    <StatusBadge status={project.status} size="sm" showIcon={false} />
+                                    <StatusBadge status={project.status as any} size="sm" showIcon={false} />
                                 </div>
                             ))}
                         </div>
