@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import {
     fetchTableData,
     DATAVERSE_TABLES,
@@ -167,23 +169,21 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
         if (get().isInitialized) return;
         set({ isLoading: true, error: null });
         try {
+            // OPTIMIZATION: Batch initial data fetching to reduce re-renders
+            // We fetch all data in parallel and update the state once at the end
             const results = await Promise.allSettled([
-                get().refreshTaskTypes(),
-                get().refreshTaskTypeAttributes(),
-                get().refreshEventTypes(),
-                get().refreshActionTypeNews(),
-                get().refreshEventSourceTypes(),
-                get().refreshEventTypeTaskTypeMappings(),
-                get().refreshTaskTypeActions(),
-                get().refreshTaskTypeAttributeMappings(),
-                // Note: crdfd_taskdependencies table doesn't exist, using eventTypeTaskTypeMappings for task flow
-
-                // Refresh instances as well
-                get().refreshTaskInstances(),
-                get().refreshEventInstances(),
-                get().refreshActionInstances(),
-                get().refreshProjects(),
-                // Note: crdfd_projecttasktypemappings table doesn't exist, using eventTypeTaskTypeMappings for project-task mappings
+                fetchTableData<DataverseTaskType>(DATAVERSE_TABLES.taskTypes.name, DATAVERSE_TABLES.taskTypes.columns, 'statecode eq 0'),
+                fetchTableData<DataverseTaskTypeAttribute>(DATAVERSE_TABLES.taskTypeAttributes.name, DATAVERSE_TABLES.taskTypeAttributes.columns, 'statecode eq 0'),
+                fetchTableData<DataverseEventType>(DATAVERSE_TABLES.eventTypes.name, DATAVERSE_TABLES.eventTypes.columns, 'statecode eq 0'),
+                fetchTableData<DataverseActionTypeNew>(DATAVERSE_TABLES.actionTypeNews.name, DATAVERSE_TABLES.actionTypeNews.columns, 'statecode eq 0'),
+                fetchTableData<DataverseEventSourceType>(DATAVERSE_TABLES.eventSourceTypes.name, DATAVERSE_TABLES.eventSourceTypes.columns, 'statecode eq 0'),
+                fetchTableData<DataverseEventTypeTaskTypeMapping>(DATAVERSE_TABLES.eventTypeTaskTypeMappings.name, DATAVERSE_TABLES.eventTypeTaskTypeMappings.columns, 'statecode eq 0'),
+                fetchTableData<DataverseTaskTypeAction>(DATAVERSE_TABLES.taskTypeActions.name, DATAVERSE_TABLES.taskTypeActions.columns, 'statecode eq 0'),
+                fetchTableData<DataverseTaskTypeAttributeMapping>(DATAVERSE_TABLES.taskTypeAttributeMappings.name, DATAVERSE_TABLES.taskTypeAttributeMappings.columns, 'statecode eq 0'),
+                fetchTableData<DataverseTaskInstance>(DATAVERSE_TABLES.taskInstances.name, DATAVERSE_TABLES.taskInstances.columns, 'statecode eq 0'),
+                fetchTableData<DataverseEventInstance>(DATAVERSE_TABLES.eventInstances.name, DATAVERSE_TABLES.eventInstances.columns, 'statecode eq 0'),
+                fetchTableData<DataverseActionInstance>(DATAVERSE_TABLES.actionInstances.name, DATAVERSE_TABLES.actionInstances.columns, 'statecode eq 0'),
+                fetchTableData<DataverseProject>(DATAVERSE_TABLES.projects.name, DATAVERSE_TABLES.projects.columns, 'statecode eq 0'),
             ]);
 
             // Log failures
@@ -199,10 +199,29 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
                 throw new Error('Failed to load any data from Dataverse');
             }
 
+            // Prepare the new state with all fetched data
+            const newState: Partial<DataverseState> = {
+                isInitialized: true,
+                isLoading: false
+            };
+
+            if (results[0].status === 'fulfilled') newState.taskTypes = results[0].value.map(mapDataverseTaskType);
+            if (results[1].status === 'fulfilled') newState.taskTypeAttributes = results[1].value.map(mapDataverseTaskTypeAttribute);
+            if (results[2].status === 'fulfilled') newState.eventTypes = results[2].value.map(mapDataverseEventType);
+            if (results[3].status === 'fulfilled') newState.actionTypeNews = results[3].value.map(mapDataverseActionTypeNew);
+            if (results[4].status === 'fulfilled') newState.eventSourceTypes = results[4].value.map(mapDataverseEventSourceType);
+            if (results[5].status === 'fulfilled') newState.eventTypeTaskTypeMappings = results[5].value.map(mapEventTypeTaskTypeMapping);
+            if (results[6].status === 'fulfilled') newState.taskTypeActions = results[6].value.map(mapTaskTypeAction);
+            if (results[7].status === 'fulfilled') newState.taskTypeAttributeMappings = results[7].value.map(mapTaskTypeAttributeMapping);
+            if (results[8].status === 'fulfilled') newState.taskInstances = results[8].value.map(mapDataverseTaskInstance);
+            if (results[9].status === 'fulfilled') newState.eventInstances = results[9].value.map(mapDataverseEventInstance);
+            if (results[10].status === 'fulfilled') newState.actionInstances = results[10].value.map(mapDataverseActionInstance);
+            if (results[11].status === 'fulfilled') newState.projects = results[11].value.map(mapDataverseProject);
+
             // MOCK DATA GENERATION
             // Generate mock instances and assign to the first available project to ensure visibility
-            const projects = get().projects;
-            if (projects.length > 0) {
+            const projects = newState.projects || get().projects;
+            if (projects && projects.length > 0) {
                 const targetProjectId = projects[0].id;
 
                 // Mock Task Instances
@@ -311,13 +330,12 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
                     }
                 ];
 
-                set((state: DataverseState) => ({
-                    taskInstances: [...state.taskInstances, ...mockTasks],
-                    actionInstances: [...state.actionInstances, ...mockActions]
-                }));
+                newState.taskInstances = [...(newState.taskInstances || get().taskInstances), ...mockTasks];
+                newState.actionInstances = [...(newState.actionInstances || get().actionInstances), ...mockActions];
             }
 
-            set({ isInitialized: true });
+            // Single set call for all initial data
+            set(newState);
 
             const someFailed = results.some(r => r.status === 'rejected');
             if (someFailed) {
@@ -1047,10 +1065,27 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
     },
 }));
 
-export function useDataverse() {
-    const store = useDataverseStore();
-    if (!store.isInitialized && !store.isLoading) {
-        store.initialize();
-    }
-    return store;
+/**
+ * Custom hook to access the Dataverse store with optional selector for better performance.
+ * Using a selector prevents unnecessary re-renders when unrelated state changes.
+ */
+export function useDataverse<T = DataverseState>(selector?: (state: DataverseState) => T): T {
+    // If no selector is provided, return the whole store (standard behavior)
+    // We use useShallow to ensure that components only re-render if the selected data actually changes
+    const defaultSelector = (state: DataverseState) => state as unknown as T;
+    const selectedState = useDataverseStore(useShallow(selector || defaultSelector));
+
+    // Access initialization state separately to trigger the side effect
+    const isInitialized = useDataverseStore(state => state.isInitialized);
+    const isLoading = useDataverseStore(state => state.isLoading);
+    const initialize = useDataverseStore(state => state.initialize);
+
+    // Use effect to handle initialization instead of doing it during render
+    useEffect(() => {
+        if (!isInitialized && !isLoading) {
+            initialize();
+        }
+    }, [isInitialized, isLoading, initialize]);
+
+    return selectedState;
 }
