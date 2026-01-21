@@ -52,7 +52,11 @@ export function DailyTaskPage() {
     ];
 
     const handleSubmit = async (data: TaskInstanceFormData) => {
-        selected ? await update(selected.id, data) : await create(data);
+        if (selected) {
+            await update(selected.id, data);
+        } else {
+            await create(data);
+        }
         setIsFormOpen(false);
         setSelected(null);
     };

@@ -25,7 +25,21 @@ const formFields: FormField[] = [
 ];
 
 export function TaskInstancePage() {
-    const { taskInstances, isLoading, refreshTaskInstances, createTaskInstance, updateTaskInstance, deactivateTaskInstance } = useDataverse();
+    const {
+        taskInstances,
+        isLoading,
+        refreshTaskInstances,
+        createTaskInstance,
+        updateTaskInstance,
+        deactivateTaskInstance
+    } = useDataverse(state => ({
+        taskInstances: state.taskInstances,
+        isLoading: state.isLoading,
+        refreshTaskInstances: state.refreshTaskInstances,
+        createTaskInstance: state.createTaskInstance,
+        updateTaskInstance: state.updateTaskInstance,
+        deactivateTaskInstance: state.deactivateTaskInstance,
+    }));
     const toast = useToast();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRows, setSelectedRows] = useState<TaskInstance[]>([]);
