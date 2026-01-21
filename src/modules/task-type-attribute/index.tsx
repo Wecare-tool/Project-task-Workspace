@@ -27,7 +27,19 @@ const formFields: FormField[] = [
 ];
 
 export function TaskTypeAttributePage() {
-    const { taskTypeAttributes, isLoading, refreshTaskTypeAttributes, createTaskTypeAttribute, updateTaskTypeAttribute } = useDataverse();
+    const {
+        taskTypeAttributes,
+        isLoading,
+        refreshTaskTypeAttributes,
+        createTaskTypeAttribute,
+        updateTaskTypeAttribute
+    } = useDataverse(state => ({
+        taskTypeAttributes: state.taskTypeAttributes,
+        isLoading: state.isLoading,
+        refreshTaskTypeAttributes: state.refreshTaskTypeAttributes,
+        createTaskTypeAttribute: state.createTaskTypeAttribute,
+        updateTaskTypeAttribute: state.updateTaskTypeAttribute,
+    }));
     const toast = useToast();
     const [searchQuery, setSearchQuery] = useState('');
     const [showFilters, setShowFilters] = useState(false);

@@ -21,14 +21,23 @@ import {
 export function DashboardPage() {
     const {
         projects,
-        taskInstances: tasks,
+        tasks,
         taskTypes,
-        actionTypeNews: actionTypes,
+        actionTypes,
         actionInstances,
         eventTypes,
         eventInstances,
         eventSourceTypes,
-    } = useDataverse();
+    } = useDataverse(state => ({
+        projects: state.projects,
+        tasks: state.taskInstances,
+        taskTypes: state.taskTypes,
+        actionTypes: state.actionTypeNews,
+        actionInstances: state.actionInstances,
+        eventTypes: state.eventTypes,
+        eventInstances: state.eventInstances,
+        eventSourceTypes: state.eventSourceTypes,
+    }));
 
     // Project stats
     const projectStats = useMemo(() => ({

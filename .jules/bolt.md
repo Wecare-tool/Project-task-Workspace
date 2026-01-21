@@ -1,0 +1,3 @@
+## 2025-05-15 - [Centralized Store Re-render Bottleneck]
+**Learning:** The `useDataverse` hook was subscribing to the entire store by default, causing every component using it to re-render on any store update (e.g., updating a single task instance would re-render the Dashboard, Task Types, etc.). Additionally, calling `initialize()` directly in the hook body can lead to multiple redundant initialization calls during the render phase.
+**Action:** Refactored `useDataverse` to support selectors and `useShallow` for optimized subscriptions. Moved `initialize()` to `useEffect` to ensure it only runs once per lifecycle and outside the render phase. Applied selectors to key modules like Dashboard and Task Instances.

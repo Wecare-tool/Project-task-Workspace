@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import {
     fetchTableData,
     DATAVERSE_TABLES,
@@ -930,10 +932,19 @@ export const useDataverseStore = create<DataverseState>((set: any, get: any) => 
     },
 }));
 
-export function useDataverse() {
-    const store = useDataverseStore();
-    if (!store.isInitialized && !store.isLoading) {
-        store.initialize();
-    }
-    return store;
+export function useDataverse<T = DataverseState>(
+    selector: (state: DataverseState) => T = (state) => state as unknown as T
+): T {
+    const result = useDataverseStore(useShallow(selector));
+    const isInitialized = useDataverseStore(state => state.isInitialized);
+    const isLoading = useDataverseStore(state => state.isLoading);
+    const initialize = useDataverseStore(state => state.initialize);
+
+    useEffect(() => {
+        if (!isInitialized && !isLoading) {
+            initialize();
+        }
+    }, [isInitialized, isLoading, initialize]);
+
+    return result;
 }
